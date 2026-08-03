@@ -129,6 +129,13 @@ jobs:
           npm --prefix web run build
           sh scripts/verify-release-package.sh
 
+      # The agent is installed as a single downloaded binary on a machine with no
+      # source tree and no cargo, so it is checked the same way: packaged,
+      # deployed elsewhere, started, asked for its local API.
+      - name: Verify the release package runs where it is deployed
+        if: matrix.enabled == 'true' && matrix.workspace == 'node'
+        run: sh scripts/verify-release-package.sh
+
       - name: Format
         if: matrix.enabled == 'true'
         run: cargo fmt --all -- --check

@@ -62,3 +62,37 @@ schema versions of the documents that cross the panel-node boundary, so an
 operator upgrading one half can tell in advance whether the other is recent
 enough. The runtime compatibility check is fail-closed, but it only fires after
 installation.
+
+## Packaging
+
+Each workspace owns its packaging in `scripts/package-release.{sh,ps1}`, and the
+release workflow calls those scripts rather than assembling artifacts itself.
+What a release contains and what its artifacts are called is decided in one
+place; a second copy inside CI would be the one nobody runs by hand, and
+therefore the one that drifts.
+
+| Artifact | Contents |
+| --- | --- |
+| `hydra-panel-linux-<arch>` | panel binary |
+| `hydra-panel-web-linux-<arch>.tar.gz` | frontend bundle, unpacks to `web/` beside the binary |
+| `panel-installer-executor-linux-<arch>` | installer executor |
+| `install-linux-<arch>.sh` | first-host installer script |
+| `hydra-node-linux-<arch>` | node agent; this is what `HYDRA_NODE_ARTIFACT_URL` points at |
+| `node-session-adapter-linux-<arch>` | session adapter, WireGuard deployments only |
+| `node-session-driver-wireguard-linux-<arch>` | WireGuard exact-session driver |
+
+Every artifact carries a `.sha256` sidecar, and each package writes a typed
+release manifest fragment.
+
+The node packaging script refuses a release base URL outside
+`https://github.com/Zolotushka1/Hydra/releases/download/node-v*`, because that is
+the only path the panel will download from. A package built for anywhere else
+cannot be installed, so it fails at packaging time rather than at provisioning
+time.
+
+Both packages are checked as artifacts rather than as code. Each workspace has a
+`scripts/verify-release-package.sh` that builds a package, deploys it to a
+directory unrelated to the source tree and starts it there: the panel must serve
+`/dashboard` and the asset that page references, and the agent must answer
+`/health` with no panel reachable. CI runs both. A test suite cannot see either
+property, because neither is a property of the code.

@@ -40,28 +40,55 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
-      - name: Build
-        working-directory: ${{ steps.target.outputs.workspace }}
-        run: cargo build --release --workspace
-
-      - name: Collect artifacts
-        id: artifacts
+      - name: Install the musl toolchain
         run: |
           set -euo pipefail
-          workspace="${{ steps.target.outputs.workspace }}"
-          mkdir -p dist
-          # Asset names carry the OS and architecture because the install step
-          # picks the artifact for the remote host, not for the runner.
-          if [ "$workspace" = "node" ]; then
-            install -m 0755 node/target/release/node-app dist/hydra-node-linux-amd64
-            install -m 0755 node/target/release/node-session-adapter dist/node-session-adapter-linux-amd64
-            install -m 0755 node/target/release/node-session-driver-wireguard dist/node-session-driver-wireguard-linux-amd64
-          else
-            install -m 0755 panel/target/release/panel-app dist/hydra-panel-linux-amd64
-            install -m 0755 panel/target/release/panel-installer-executor dist/hydra-panel-installer-executor-linux-amd64
+          rustup target add x86_64-unknown-linux-musl
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
+      # The frontend is read from disk at run time, so the packaging script
+      # refuses to run without it.
+      - name: Build the frontend
+        if: steps.target.outputs.workspace == 'panel'
+        working-directory: panel
+        run: |
+          set -euo pipefail
+          npm --prefix web ci
+          npm --prefix web run build
+
+      # The packaging script is the only place that decides what a release
+      # contains and what the artifacts are called. Building here instead would
+      # put that logic in two places, and the copy CI runs is the one nobody
+      # executes by hand — so it is the one that drifts.
+      - name: Package
+        id: artifacts
+        working-directory: ${{ steps.target.outputs.workspace }}
+        run: |
+          set -euo pipefail
+          sh scripts/package-release.sh \
+            "${{ steps.target.outputs.version }}" \
+            "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}"
+          mkdir -p "${GITHUB_WORKSPACE}/dist"
+          cp -R dist/linux-x86_64/. "${GITHUB_WORKSPACE}/dist/"
+          # A release asset is a file. The panel package carries the frontend as
+          # a directory, so it travels as an archive that unpacks to `web/` beside
+          # the binary — the layout the panel resolves by default.
+          if [ -d "${GITHUB_WORKSPACE}/dist/web" ]; then
+            tar -czf "${GITHUB_WORKSPACE}/dist/hydra-panel-web-linux-x86_64.tar.gz" \
+              -C "${GITHUB_WORKSPACE}/dist" web
+            rm -rf "${GITHUB_WORKSPACE}/dist/web"
           fi
-          ( cd dist && sha256sum * > SHA256SUMS )
-          cat dist/SHA256SUMS
+          ( cd "${GITHUB_WORKSPACE}/dist" \
+            && find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%P\0' \
+            | sort -z | xargs -0 sha256sum > SHA256SUMS )
+          cat "${GITHUB_WORKSPACE}/dist/SHA256SUMS"
+
+      # The artifact is what operators install, so it is checked as an artifact:
+      # deployed to a directory unrelated to the source tree and started there.
+      - name: Verify the package
+        working-directory: ${{ steps.target.outputs.workspace }}
+        run: sh scripts/verify-release-package.sh
 
       # The wire contract a consumer needs to know before upgrading. The versions
       # are read out of the registry table in panel/docs/api.md, which the
@@ -96,7 +123,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release create "${GITHUB_REF_NAME}" \
-            --title "${GITHUB_REF_NAME}" \
-            --notes-file release-notes.md \
-            dist/*
+          # Only regular files: a directory left in dist would fail the upload
+          # halfway through, after the release object already exists.
+          find dist -maxdepth 1 -type f -print0 \
+            | xargs -0 gh release create "${GITHUB_REF_NAME}" \
+                --title "${GITHUB_REF_NAME}" \
+                --notes-file release-notes.md

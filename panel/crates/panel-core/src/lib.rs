@@ -33180,7 +33180,7 @@ mod tests {
         };
 
         assert!(run(&format!(
-            "{NODE_ARTIFACT_RELEASE_PREFIX}0.1.0/hydra-node-linux-amd64"
+            "{NODE_ARTIFACT_RELEASE_PREFIX}0.1.0/hydra-node-linux-x86_64"
         )));
         assert!(!run(
             "https://github.com/attacker/Hydra/releases/download/node-v1/hydra-node"
@@ -39653,32 +39653,55 @@ mod cdn_fronting_tests {
 mod validator_isolation_tests {
     use std::collections::BTreeSet;
 
-    /// Validators that are still exercised by calling them directly.
+    /// Validators still exercised by calling them directly, each paired with the
+    /// entry point its test should go through instead.
     ///
-    /// Each entry is a rule whose test bypasses the path a request takes to reach
-    /// it, so the test proves the rule rejects bad input without proving the rule
-    /// runs. They predate the policy in `docs/testing-policy.md`.
+    /// The pair is the point. A bare list of names records that something is
+    /// wrong; naming the entry point records that a way through it exists, which
+    /// is the claim that decays. The test below resolves every entry point in
+    /// this table and fails if one of them stops existing — a rename or a removal
+    /// then surfaces here instead of leaving a note that quietly became false.
     ///
     /// This list may shrink and must never grow. Converting an entry means
-    /// driving the same violation through the handler or document builder that
-    /// production uses; if the violation cannot be expressed that way, the rule
-    /// is not connected and the fix is to connect it, not to keep the direct
-    /// test.
-    const UNCONVERTED: &[&str] = &[
-        "validate_executor_step_report",
-        "validate_inbound_protocol_mode",
-        "validate_node_provisioning_executor_request",
-        "validate_node_provisioning_executor_workflow",
-        "validate_panel_installer_result",
-        "validate_protocol",
-        "validate_raw_xray_stream_settings",
-        "validate_register_subscription_device_request",
-        "validate_security_settings",
-        "validate_subscription_client_public_state",
-        "validate_subscription_session_report_capabilities",
-        "validate_telegram_settings",
-        "validate_username",
-        "validate_xray_update_url",
+    /// driving the same violation through the named function; if the violation
+    /// cannot be expressed that way, the rule is not connected to that path and
+    /// the fix is to connect it, not to keep the direct test.
+    const UNCONVERTED: &[(&str, &str)] = &[
+        (
+            "validate_executor_step_report",
+            "update_node_provisioning_step",
+        ),
+        ("validate_inbound_protocol_mode", "create_inbound"),
+        (
+            "validate_node_provisioning_executor_request",
+            "reprovision_node",
+        ),
+        (
+            "validate_node_provisioning_executor_workflow",
+            "node_provisioning_executor_session",
+        ),
+        (
+            "validate_panel_installer_result",
+            "panel_installer_job_result",
+        ),
+        ("validate_protocol", "create_inbound"),
+        ("validate_raw_xray_stream_settings", "generated_xray_config"),
+        (
+            "validate_register_subscription_device_request",
+            "register_subscription_client_device",
+        ),
+        ("validate_security_settings", "update_security_settings"),
+        (
+            "validate_subscription_client_public_state",
+            "render_subscription_by_token",
+        ),
+        (
+            "validate_subscription_session_report_capabilities",
+            "node_agent_report_subscription_sessions",
+        ),
+        ("validate_telegram_settings", "update_telegram_settings"),
+        ("validate_username", "create_user"),
+        ("validate_xray_update_url", "xray_core_update"),
     ];
 
     /// `validate_raw_xray_config` is the entry point for raw config validation,
@@ -39769,7 +39792,28 @@ mod validator_isolation_tests {
             called_from_tests.remove(*entry);
         }
 
-        let allowed: BTreeSet<String> = UNCONVERTED.iter().map(|item| item.to_string()).collect();
+        let allowed: BTreeSet<String> = UNCONVERTED
+            .iter()
+            .map(|(validator, _)| validator.to_string())
+            .collect();
+
+        // Every named entry point must still exist. Without this the second
+        // column is a comment: a renamed handler would leave the table pointing
+        // at nothing and no one would find out.
+        let mut missing = Vec::new();
+        for (validator, entry_point) in UNCONVERTED {
+            let defined = source.contains(&format!("fn {entry_point}("))
+                || source.contains(&format!("fn {entry_point}<"));
+            if !defined {
+                missing.push(format!("{validator} -> {entry_point}"));
+            }
+        }
+        assert!(
+            missing.is_empty(),
+            "these entry points no longer exist; point the entry at the function \
+             that replaced it, or convert the validator:\n  {}",
+            missing.join("\n  ")
+        );
 
         let added: Vec<&String> = called_from_tests.difference(&allowed).collect();
         assert!(
