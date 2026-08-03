@@ -1,0 +1,16 @@
+[package]
+name = "node-session-adapter-client"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+node-domain = { path = "../node-domain" }
+reqwest.workspace = true
+
+[dev-dependencies]
+axum.workspace = true
+tokio.workspace = true
+

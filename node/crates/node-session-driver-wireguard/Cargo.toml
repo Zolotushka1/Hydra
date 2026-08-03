@@ -1,0 +1,14 @@
+[package]
+name = "node-session-driver-wireguard"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+hmac.workspace = true
+node-domain = { path = "../node-domain" }
+serde_json.workspace = true
+sha2.workspace = true
+tokio.workspace = true

@@ -1,0 +1,102 @@
+name: Release
+
+# Two independent tag families, because the panel and the agent are released on
+# their own cadence: `panel-vX.Y.Z` and `node-vX.Y.Z`. The node install script
+# pins artifact downloads to the `node-v` family, so a node asset published under
+# any other tag will be refused by the node before it is fetched.
+on:
+  push:
+    tags:
+      - 'panel-v*'
+      - 'node-v*'
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve the workspace from the tag
+        id: target
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          case "$tag" in
+            panel-v*) workspace=panel ;;
+            node-v*)  workspace=node ;;
+            *)
+              echo "tag $tag belongs to no known release family" >&2
+              exit 1
+              ;;
+          esac
+          echo "workspace=$workspace" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#*-v}" >> "$GITHUB_OUTPUT"
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        working-directory: ${{ steps.target.outputs.workspace }}
+        run: cargo build --release --workspace
+
+      - name: Collect artifacts
+        id: artifacts
+        run: |
+          set -euo pipefail
+          workspace="${{ steps.target.outputs.workspace }}"
+          mkdir -p dist
+          # Asset names carry the OS and architecture because the install step
+          # picks the artifact for the remote host, not for the runner.
+          if [ "$workspace" = "node" ]; then
+            install -m 0755 node/target/release/node-app dist/hydra-node-linux-amd64
+            install -m 0755 node/target/release/node-session-adapter dist/node-session-adapter-linux-amd64
+            install -m 0755 node/target/release/node-session-driver-wireguard dist/node-session-driver-wireguard-linux-amd64
+          else
+            install -m 0755 panel/target/release/panel-app dist/hydra-panel-linux-amd64
+            install -m 0755 panel/target/release/panel-installer-executor dist/hydra-panel-installer-executor-linux-amd64
+          fi
+          ( cd dist && sha256sum * > SHA256SUMS )
+          cat dist/SHA256SUMS
+
+      # The wire contract a consumer needs to know before upgrading. The versions
+      # are read out of the registry table in panel/docs/api.md, which the
+      # `published_schema_versions_match_the_documented_table` test keeps equal to
+      # the registry in code — so this is a projection of the code, not a second
+      # place to maintain the numbers.
+      - name: Compose the release notes
+        run: |
+          set -euo pipefail
+          {
+            printf '## Schema versions\n\n'
+            printf '| schema | version |\n|---|---|\n'
+            for schema in node_runtime_config apply_plan node_provisioning_executor_contract protocol_capabilities; do
+              row="$(grep -E "^\| \`${schema}\` \|" panel/docs/api.md || true)"
+              if [ -z "$row" ]; then
+                echo "schema $schema is missing from the registry table in panel/docs/api.md" >&2
+                exit 1
+              fi
+              version="$(echo "$row" | awk -F'|' '{gsub(/ /, "", $3); print $3}')"
+              printf '| `%s` | %s |\n' "$schema" "$version"
+            done
+            printf '\nA raised version means the document shape changed; see the versioning '
+            printf 'policy in `panel/docs/api.md` for what each change class requires.\n\n'
+            printf '## Checksums\n\n```\n'
+            cat dist/SHA256SUMS
+            printf '```\n'
+          } > release-notes.md
+          cat release-notes.md
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file release-notes.md \
+            dist/*

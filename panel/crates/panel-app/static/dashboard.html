@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hydra Panel</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --border: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #60a5fa;
+      --danger: #f87171;
+      --success: #34d399;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      background: linear-gradient(180deg, #020617 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    .layout {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+    }
+    .panel {
+      background: rgba(17, 24, 39, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+    }
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    h1, h2, h3 {
+      margin: 0 0 12px;
+      font-weight: 700;
+    }
+    h1 { font-size: 28px; }
+    h2 { font-size: 18px; }
+    h3 { font-size: 15px; color: var(--muted); }
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      flex: 1 1 180px;
+    }
+    input, textarea, select, button {
+      font: inherit;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    input, textarea, select {
+      width: 100%;
+      background: #0b1220;
+      color: var(--text);
+      padding: 10px 12px;
+    }
+    textarea {
+      min-height: 220px;
+      resize: vertical;
+    }
+    button {
+      background: var(--accent);
+      color: #0b1220;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: var(--panel-2);
+      color: var(--text);
+    }
+    button.danger {
+      background: var(--danger);
+      color: #111827;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 12px;
+      color: #cbd5e1;
+    }
+    .muted { color: var(--muted); }
+    .ok { color: var(--success); }
+    .err { color: var(--danger); }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .table th, .table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+      text-align: left;
+      vertical-align: top;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="panel">
+      <div class="row" style="justify-content: space-between;">
+        <div>
+          <h1>Hydra Panel</h1>
+          <div class="muted">Built-in debug dashboard for the Rust rewrite.</div>
+        </div>
+        <div class="row">
+          <span id="sessionState" class="badge">Logged out</span>
+          <button id="refreshAllBtn" class="secondary">Refresh</button>
+          <button id="logoutBtn" class="danger">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Admin Login</h2>
+        <div class="row">
+          <label>Username
+            <input id="username" value="admin" />
+          </label>
+          <label>Password
+            <input id="password" type="password" value="admin123" />
+          </label>
+        </div>
+        <div class="row">
+          <label>2FA code
+            <input id="twoFactorCode" placeholder="optional" />
+          </label>
+          <label>Challenge token
+            <input id="challengeToken" placeholder="for 2-step 2FA" />
+          </label>
+        </div>
+        <div class="row">
+          <button id="loginBtn">Login</button>
+          <span id="loginStatus" class="muted"></span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>System Overview</h2>
+        <pre id="overviewOutput">Not loaded.</pre>
+      </section>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="row" style="justify-content: space-between;">
+          <h2>Users</h2>
+          <button id="loadUsersBtn" class="secondary">Reload users</button>
+        </div>
+        <div class="row">
+          <label>Username
+            <input id="newUserName" placeholder="alice" />
+          </label>
+          <label>Data limit bytes
+            <input id="newUserLimit" type="number" placeholder="optional" />
+          </label>
+          <label>Expire at unix
+            <input id="newUserExpire" type="number" placeholder="optional" />
+          </label>
+        </div>
+        <div class="row">
+          <label>Note
+            <input id="newUserNote" placeholder="optional" />
+          </label>
+          <label>Status
+            <select id="newUserStatus">
+              <option value="active">active</option>
+              <option value="disabled">disabled</option>
+              <option value="expired">expired</option>
+              <option value="on_hold">on_hold</option>
+            </select>
+          </label>
+          <label style="align-self: end;">
+            <button id="createUserBtn">Create user</button>
+          </label>
+        </div>
+        <div id="usersOutput"></div>
+      </section>
+
+      <section class="panel">
+        <div class="row" style="justify-content: space-between;">
+          <h2>Inbounds</h2>
+          <button id="loadInboundsBtn" class="secondary">Reload inbounds</button>
+        </div>
+        <div class="row">
+          <label>Tag
+            <input id="newInboundTag" placeholder="main-vless" />
+          </label>
+          <label>Port
+            <input id="newInboundPort" type="number" value="443" />
+          </label>
+          <label>Protocol
+            <select id="newInboundProtocol">
+              <option value="vless">vless</option>
+            </select>
+          </label>
+          <label>Network
+            <select id="newInboundNetwork">
+              <option value="tcp">tcp</option>
+              <option value="ws">ws</option>
+              <option value="grpc">grpc</option>
+              <option value="http_upgrade">http_upgrade</option>
+              <option value="quic">quic</option>
+            </select>
+          </label>
+          <label>TLS
+            <select id="newInboundTls">
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <button id="createInboundBtn">Create inbound</button>
+        </div>
+        <div id="inboundsOutput"></div>
+      </section>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="row" style="justify-content: space-between;">
+          <h2>Hosts</h2>
+          <button id="loadHostsBtn" class="secondary">Reload hosts</button>
+        </div>
+        <div class="row">
+          <label>Remark
+            <input id="newHostRemark" placeholder="Moscow TLS" />
+          </label>
+          <label>Address
+            <input id="newHostAddress" placeholder="example.com" />
+          </label>
+          <label>Port
+            <input id="newHostPort" type="number" value="443" />
+          </label>
+        </div>
+        <div class="row">
+          <label>Path
+            <input id="newHostPath" placeholder="/ws" />
+          </label>
+          <label>SNI
+            <input id="newHostSni" placeholder="optional" />
+          </label>
+          <label>Security
+            <select id="newHostSecurity">
+              <option value="tls">tls</option>
+              <option value="reality">reality</option>
+              <option value="none">none</option>
+            </select>
+          </label>
+          <label style="align-self: end;">
+            <button id="createHostBtn">Create host</button>
+          </label>
+        </div>
+        <div id="hostsOutput"></div>
+      </section>
+
+      <section class="panel">
+        <div class="row" style="justify-content: space-between;">
+          <h2>Proxy Profiles</h2>
+          <button id="loadProxyProfilesBtn" class="secondary">Reload profiles</button>
+        </div>
+        <div class="row">
+          <label>Name
+            <input id="newProfileName" placeholder="default-vless" />
+          </label>
+          <label>Type
+            <select id="newProfileType">
+              <option value="vless">vless</option>
+            </select>
+          </label>
+        </div>
+        <label>Settings JSON
+          <textarea id="newProfileSettings">{}</textarea>
+        </label>
+        <label>Excluded inbound tags (comma-separated)
+          <input id="newProfileExcluded" placeholder="optional" />
+        </label>
+        <div class="row">
+          <button id="createProxyProfileBtn">Create proxy profile</button>
+        </div>
+        <div id="proxyProfilesOutput"></div>
+      </section>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="row" style="justify-content: space-between;">
+          <h2>Security Settings</h2>
+          <button id="loadSecurityBtn" class="secondary">Reload security</button>
+        </div>
+        <textarea id="securityJson"></textarea>
+        <div class="row">
+          <button id="saveSecurityBtn">Save security settings</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="row" style="justify-content: space-between;">
+          <h2>System Thresholds</h2>
+          <button id="loadThresholdsBtn" class="secondary">Reload thresholds</button>
+        </div>
+        <textarea id="thresholdsJson"></textarea>
+        <div class="row">
+          <button id="saveThresholdsBtn">Save thresholds</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="row" style="justify-content: space-between;">
+          <h2>Core Config</h2>
+          <div class="row">
+            <button id="loadCoreConfigBtn" class="secondary">Reload config</button>
+            <button id="startCoreBtn" class="secondary">Start</button>
+            <button id="stopCoreBtn" class="secondary">Stop</button>
+            <button id="restartCoreBtn" class="secondary">Restart</button>
+          </div>
+        </div>
+        <textarea id="coreConfig"></textarea>
+        <div class="row">
+          <button id="saveCoreConfigBtn">Save core config</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="row" style="justify-content: space-between;">
+          <h2>Logs / Alerts / Audit</h2>
+          <div class="row">
+            <button id="loadLogsBtn" class="secondary">Logs</button>
+            <button id="loadAlertsBtn" class="secondary">Alerts</button>
+            <button id="loadAuditBtn" class="secondary">Audit</button>
+          </div>
+        </div>
+        <pre id="eventsOutput">No data loaded.</pre>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      token: localStorage.getItem("hydra-token") || "",
+      lastChallengeToken: ""
+    };
+
+    const els = {
+      sessionState: document.getElementById("sessionState"),
+      loginStatus: document.getElementById("loginStatus"),
+      overviewOutput: document.getElementById("overviewOutput"),
+      usersOutput: document.getElementById("usersOutput"),
+      inboundsOutput: document.getElementById("inboundsOutput"),
+      hostsOutput: document.getElementById("hostsOutput"),
+      proxyProfilesOutput: document.getElementById("proxyProfilesOutput"),
+      eventsOutput: document.getElementById("eventsOutput"),
+      securityJson: document.getElementById("securityJson"),
+      thresholdsJson: document.getElementById("thresholdsJson"),
+      coreConfig: document.getElementById("coreConfig")
+    };
+
+    function setSessionLabel() {
+      els.sessionState.textContent = state.token ? "Logged in" : "Logged out";
+    }
+
+    function authHeaders() {
+      return state.token ? { Authorization: `Bearer ${state.token}` } : {};
+    }
+
+    async function api(path, options = {}) {
+      const res = await fetch(path, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders(),
+          ...(options.headers || {})
+        }
+      });
+      if (res.status === 204) return null;
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.error || data?.reason || `HTTP ${res.status}`);
+      }
+      return data;
+    }
+
+    function renderTable(rows, columns, emptyText = "No data.") {
+      if (!rows.length) {
+        return `<div class="muted">${emptyText}</div>`;
+      }
+      return `
+        <table class="table">
+          <thead>
+            <tr>${columns.map((col) => `<th>${col.label}</th>`).join("")}</tr>
+          </thead>
+          <tbody>
+            ${rows.map((row) => `<tr>${columns.map((col) => `<td>${col.render ? col.render(row) : (row[col.key] ?? "")}</td>`).join("")}</tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function pretty(value) {
+      return JSON.stringify(value, null, 2);
+    }
+
+    async function login() {
+      const payload = {
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+        two_factor_code: document.getElementById("twoFactorCode").value || undefined,
+        challenge_token: document.getElementById("challengeToken").value || undefined
+      };
+      try {
+        const data = await api("/api/admin/login", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        state.token = data.token;
+        localStorage.setItem("hydra-token", state.token);
+        els.loginStatus.textContent = "Login succeeded.";
+        els.loginStatus.className = "ok";
+        setSessionLabel();
+        await refreshAll();
+      } catch (error) {
+        els.loginStatus.textContent = String(error.message);
+        els.loginStatus.className = "err";
+      }
+    }
+
+    async function logout() {
+      if (!state.token) return;
+      try { await api("/api/admin/logout", { method: "POST" }); } catch {}
+      state.token = "";
+      localStorage.removeItem("hydra-token");
+      setSessionLabel();
+    }
+
+    async function loadOverview() {
+      const [overview, coreState] = await Promise.all([
+        api("/api/system/overview"),
+        api("/api/core/state")
+      ]);
+      els.overviewOutput.textContent = pretty({ overview, coreState });
+    }
+
+    async function loadUsers() {
+      const users = await api("/api/users");
+      els.usersOutput.innerHTML = renderTable(users, [
+        { label: "Username", key: "username" },
+        { label: "Status", key: "status" },
+        { label: "Used", key: "used_traffic_bytes" },
+        { label: "Limit", render: (row) => row.data_limit_bytes ?? "" },
+        { label: "Expire", render: (row) => row.expire_at_unix ?? "" },
+        { label: "Subscription", render: (row) => row.subscription_token.slice(0, 12) + "..." }
+      ]);
+    }
+
+    async function loadInbounds() {
+      const items = await api("/api/inbounds");
+      els.inboundsOutput.innerHTML = renderTable(items, [
+        { label: "Tag", key: "tag" },
+        { label: "Port", key: "port" },
+        { label: "Protocol", key: "protocol" },
+        { label: "Network", key: "network" },
+        { label: "TLS", key: "tls_enabled" }
+      ]);
+    }
+
+    async function loadHosts() {
+      const items = await api("/api/hosts");
+      els.hostsOutput.innerHTML = renderTable(items, [
+        { label: "ID", key: "id" },
+        { label: "Remark", key: "remark" },
+        { label: "Address", key: "address" },
+        { label: "Security", key: "security" }
+      ]);
+    }
+
+    async function loadProxyProfiles() {
+      const items = await api("/api/proxy-profiles");
+      els.proxyProfilesOutput.innerHTML = renderTable(items, [
+        { label: "ID", key: "id" },
+        { label: "Name", key: "name" },
+        { label: "Type", key: "proxy_type" },
+        { label: "Excluded", render: (row) => row.excluded_inbound_tags.join(", ") }
+      ]);
+    }
+
+    async function loadSecurity() {
+      const data = await api("/api/admin/security/settings");
+      els.securityJson.value = pretty(data);
+    }
+
+    async function loadThresholds() {
+      const data = await api("/api/system/thresholds");
+      els.thresholdsJson.value = pretty(data);
+    }
+
+    async function loadCoreConfig() {
+      const data = await api("/api/core/config");
+      els.coreConfig.value = data.config;
+    }
+
+    async function loadLogs() {
+      const data = await api("/api/system/logs?limit=100");
+      els.eventsOutput.textContent = pretty(data);
+    }
+
+    async function loadAlerts() {
+      const data = await api("/api/system/alerts/history?limit=100");
+      els.eventsOutput.textContent = pretty(data);
+    }
+
+    async function loadAudit() {
+      const data = await api("/api/admin/security/audit");
+      els.eventsOutput.textContent = pretty(data);
+    }
+
+    async function refreshAll() {
+      if (!state.token) return;
+      await Promise.all([
+        loadOverview(),
+        loadUsers(),
+        loadInbounds(),
+        loadHosts(),
+        loadProxyProfiles(),
+        loadSecurity(),
+        loadThresholds(),
+        loadCoreConfig()
+      ]);
+    }
+
+    document.getElementById("loginBtn").addEventListener("click", login);
+    document.getElementById("logoutBtn").addEventListener("click", logout);
+    document.getElementById("refreshAllBtn").addEventListener("click", refreshAll);
+    document.getElementById("loadUsersBtn").addEventListener("click", loadUsers);
+    document.getElementById("loadInboundsBtn").addEventListener("click", loadInbounds);
+    document.getElementById("loadHostsBtn").addEventListener("click", loadHosts);
+    document.getElementById("loadProxyProfilesBtn").addEventListener("click", loadProxyProfiles);
+    document.getElementById("loadSecurityBtn").addEventListener("click", loadSecurity);
+    document.getElementById("loadThresholdsBtn").addEventListener("click", loadThresholds);
+    document.getElementById("loadCoreConfigBtn").addEventListener("click", loadCoreConfig);
+    document.getElementById("loadLogsBtn").addEventListener("click", loadLogs);
+    document.getElementById("loadAlertsBtn").addEventListener("click", loadAlerts);
+    document.getElementById("loadAuditBtn").addEventListener("click", loadAudit);
+
+    document.getElementById("createUserBtn").addEventListener("click", async () => {
+      await api("/api/users", {
+        method: "POST",
+        body: JSON.stringify({
+          username: document.getElementById("newUserName").value,
+          status: document.getElementById("newUserStatus").value,
+          data_limit_bytes: document.getElementById("newUserLimit").value ? Number(document.getElementById("newUserLimit").value) : null,
+          expire_at_unix: document.getElementById("newUserExpire").value ? Number(document.getElementById("newUserExpire").value) : null,
+          note: document.getElementById("newUserNote").value || null
+        })
+      });
+      await loadUsers();
+    });
+
+    document.getElementById("createInboundBtn").addEventListener("click", async () => {
+      await api("/api/inbounds", {
+        method: "POST",
+        body: JSON.stringify({
+          tag: document.getElementById("newInboundTag").value,
+          port: Number(document.getElementById("newInboundPort").value),
+          protocol: document.getElementById("newInboundProtocol").value,
+          network: document.getElementById("newInboundNetwork").value,
+          tls_enabled: document.getElementById("newInboundTls").value === "true"
+        })
+      });
+      await loadInbounds();
+    });
+
+    document.getElementById("createHostBtn").addEventListener("click", async () => {
+      await api("/api/hosts", {
+        method: "POST",
+        body: JSON.stringify({
+          remark: document.getElementById("newHostRemark").value,
+          address: document.getElementById("newHostAddress").value,
+          port: Number(document.getElementById("newHostPort").value),
+          path: document.getElementById("newHostPath").value || null,
+          sni: document.getElementById("newHostSni").value || null,
+          security: document.getElementById("newHostSecurity").value
+        })
+      });
+      await loadHosts();
+    });
+
+    document.getElementById("createProxyProfileBtn").addEventListener("click", async () => {
+      const excluded = document.getElementById("newProfileExcluded").value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      await api("/api/proxy-profiles", {
+        method: "POST",
+        body: JSON.stringify({
+          name: document.getElementById("newProfileName").value,
+          proxy_type: document.getElementById("newProfileType").value,
+          settings_json: document.getElementById("newProfileSettings").value,
+          excluded_inbound_tags: excluded
+        })
+      });
+      await loadProxyProfiles();
+    });
+
+    document.getElementById("saveSecurityBtn").addEventListener("click", async () => {
+      await api("/api/admin/security/settings", {
+        method: "PUT",
+        body: els.securityJson.value
+      });
+      await loadSecurity();
+    });
+
+    document.getElementById("saveThresholdsBtn").addEventListener("click", async () => {
+      await api("/api/system/thresholds", {
+        method: "PUT",
+        body: els.thresholdsJson.value
+      });
+      await loadThresholds();
+    });
+
+    document.getElementById("saveCoreConfigBtn").addEventListener("click", async () => {
+      await api("/api/core/config", {
+        method: "PUT",
+        body: JSON.stringify({ config: els.coreConfig.value })
+      });
+      await loadCoreConfig();
+    });
+
+    document.getElementById("startCoreBtn").addEventListener("click", async () => {
+      await api("/api/core/actions", { method: "POST", body: JSON.stringify({ action: "start" }) });
+      await loadOverview();
+    });
+    document.getElementById("stopCoreBtn").addEventListener("click", async () => {
+      await api("/api/core/actions", { method: "POST", body: JSON.stringify({ action: "stop" }) });
+      await loadOverview();
+    });
+    document.getElementById("restartCoreBtn").addEventListener("click", async () => {
+      await api("/api/core/actions", { method: "POST", body: JSON.stringify({ action: "restart" }) });
+      await loadOverview();
+    });
+
+    setSessionLabel();
+    if (state.token) {
+      refreshAll().catch((error) => {
+        els.loginStatus.textContent = String(error.message);
+        els.loginStatus.className = "err";
+      });
+    }
+  </script>
+</body>
+</html>

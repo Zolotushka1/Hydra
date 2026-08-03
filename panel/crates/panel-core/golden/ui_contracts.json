@@ -1,0 +1,1496 @@
+{
+  "api_version": "<volatile>",
+  "checked_at_unix": "<volatile>",
+  "endpoint_groups": [
+    {
+      "endpoints": [
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "security"
+    },
+    {
+      "endpoints": [
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "ui"
+    },
+    {
+      "endpoints": [
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "telegram"
+    },
+    {
+      "endpoints": [
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "installer"
+    },
+    {
+      "endpoints": [
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "system"
+    },
+    {
+      "endpoints": [
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "core"
+    },
+    {
+      "endpoints": [
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "route_materials"
+    },
+    {
+      "endpoints": [
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "DELETE",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "DELETE",
+          "paginated": false,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "users"
+    },
+    {
+      "endpoints": [
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "DELETE",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "DELETE",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "subscription_catalog"
+    },
+    {
+      "endpoints": [
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "DELETE",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "DELETE",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "DELETE",
+          "paginated": false,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "network"
+    },
+    {
+      "endpoints": [
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "DELETE",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "clusters"
+    },
+    {
+      "endpoints": [
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "DELETE",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "nodes"
+    },
+    {
+      "endpoints": [
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "<volatile>"
+        },
+        {
+          "method": "PUT",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "<volatile>"
+        }
+      ],
+      "group": "provisioning"
+    }
+  ],
+  "enums": [
+    {
+      "name": "node_status",
+      "values": [
+        "unknown",
+        "healthy",
+        "degraded",
+        "offline"
+      ]
+    },
+    {
+      "name": "node_sync_status",
+      "values": [
+        "unknown",
+        "synced",
+        "drifted",
+        "pending"
+      ]
+    },
+    {
+      "name": "node_provisioning_status",
+      "values": [
+        "none",
+        "pending",
+        "running",
+        "failed",
+        "completed"
+      ]
+    },
+    {
+      "name": "node_apply_lifecycle_state",
+      "values": [
+        "unknown",
+        "pending",
+        "downloaded",
+        "rendered",
+        "validated",
+        "applied",
+        "failed",
+        "rolled_back"
+      ]
+    },
+    {
+      "name": "node_apply_result_status",
+      "values": [
+        "applied",
+        "failed",
+        "rolled_back",
+        "skipped"
+      ]
+    },
+    {
+      "name": "node_alert_kind",
+      "values": [
+        "poll_backoff",
+        "runtime_validation_failed",
+        "xray_runtime_failed",
+        "xray_update_failed",
+        "sidecar_failed",
+        "sidecar_degraded"
+      ]
+    },
+    {
+      "name": "apply_timeline_status",
+      "values": [
+        "pending",
+        "active",
+        "ok",
+        "warning",
+        "failed",
+        "skipped",
+        "unknown"
+      ]
+    },
+    {
+      "name": "user_status",
+      "values": [
+        "active",
+        "disabled",
+        "expired",
+        "on_hold"
+      ]
+    },
+    {
+      "name": "subscription_client_status",
+      "values": [
+        "active",
+        "disabled",
+        "expired",
+        "revoked"
+      ]
+    },
+    {
+      "name": "subscription_format",
+      "values": [
+        "json",
+        "plain_text",
+        "base64",
+        "diagnostic_json"
+      ]
+    },
+    {
+      "name": "subscription_device_enrollment_status",
+      "values": [
+        "active",
+        "consumed",
+        "revoked",
+        "expired"
+      ]
+    },
+    {
+      "name": "subscription_device_status",
+      "values": [
+        "active",
+        "revoked"
+      ]
+    },
+    {
+      "name": "subscription_usage_window",
+      "values": [
+        "hours12",
+        "day1",
+        "days3",
+        "week1",
+        "month1",
+        "months3",
+        "custom"
+      ]
+    },
+    {
+      "name": "subscription_session_verdict",
+      "values": [
+        "allow",
+        "block"
+      ]
+    },
+    {
+      "name": "subscription_session_enforcement_status",
+      "values": [
+        "pending",
+        "applied",
+        "failed"
+      ]
+    },
+    {
+      "name": "subscription_session_runtime_adapter",
+      "values": [
+        "node_managed_exact_session"
+      ]
+    },
+    {
+      "name": "subscription_session_observation_source",
+      "values": [
+        "node_managed_runtime_table"
+      ]
+    },
+    {
+      "name": "subscription_session_runtime_capability",
+      "values": [
+        "opaque_session_reference",
+        "exact_session_termination",
+        "post_action_absence_verification",
+        "principal_wide_termination_only"
+      ]
+    },
+    {
+      "name": "protocol",
+      "values": [
+        "vless",
+        "hysteria2",
+        "wireguard"
+      ]
+    },
+    {
+      "name": "protocol_support_status",
+      "values": [
+        "production",
+        "legacy",
+        "planned"
+      ]
+    },
+    {
+      "name": "inbound_transport",
+      "values": [
+        "tcp",
+        "udp",
+        "ws",
+        "grpc",
+        "http_upgrade",
+        "quic",
+        "xhttp"
+      ]
+    },
+    {
+      "name": "host_security_mode",
+      "values": [
+        "none",
+        "tls",
+        "reality"
+      ]
+    },
+    {
+      "name": "cluster_status",
+      "values": [
+        "draft",
+        "active",
+        "disabled"
+      ]
+    },
+    {
+      "name": "cluster_node_role",
+      "values": [
+        "entry",
+        "relay",
+        "exit"
+      ]
+    },
+    {
+      "name": "audit_event_type",
+      "values": [
+        "login_succeeded",
+        "login_failed",
+        "logout_succeeded",
+        "security_settings_updated",
+        "security_settings_update_failed",
+        "security_preset_applied",
+        "two_factor_secret_regenerated",
+        "two_factor_enabled",
+        "two_factor_disabled",
+        "two_factor_two_step_updated",
+        "telegram_settings_updated",
+        "telegram_test_message_requested",
+        "telegram_retry_due_requested",
+        "admin_session_revoked",
+        "system_thresholds_updated",
+        "ban_created",
+        "ban_removed",
+        "user_created",
+        "user_updated",
+        "user_deleted",
+        "user_usage_reset",
+        "user_usage_reported",
+        "user_subscription_revoked",
+        "subscription_device_registered",
+        "subscription_device_revoked",
+        "subscription_device_enrollment_created",
+        "subscription_device_enrollment_revoked",
+        "subscription_device_enrollment_consumed",
+        "subscription_session_reported",
+        "subscription_session_enforcement_reported",
+        "subscription_plan_created",
+        "subscription_plan_updated",
+        "subscription_plan_deleted",
+        "subscription_client_created",
+        "subscription_client_updated",
+        "subscription_client_access_updated",
+        "subscription_client_usage_reset",
+        "subscription_client_usage_reported",
+        "subscription_client_revoked",
+        "subscription_client_deleted",
+        "user_template_created",
+        "user_template_updated",
+        "user_template_deleted",
+        "inbound_created",
+        "inbound_updated",
+        "inbound_deleted",
+        "host_created",
+        "host_updated",
+        "host_deleted",
+        "proxy_profile_created",
+        "proxy_profile_updated",
+        "proxy_profile_deleted",
+        "node_created",
+        "node_updated",
+        "node_deleted",
+        "node_auth_token_rotated",
+        "node_local_api_token_updated",
+        "node_local_runtime_action_requested",
+        "node_local_xray_update_requested",
+        "node_bootstrap_probe_requested",
+        "node_provisioning_started",
+        "node_provisioning_updated",
+        "provisioning_executor_handshaked",
+        "provisioning_executor_trust_updated",
+        "provisioning_executor_token_rotated",
+        "node_provisioning_finished",
+        "node_apply_requested",
+        "node_apply_retry_requested",
+        "node_rollback_requested",
+        "node_heartbeat_received",
+        "node_sync_updated",
+        "panel_installer_job_created",
+        "route_credential_rotated",
+        "route_credential_revoked",
+        "route_ca_rotated",
+        "core_config_saved",
+        "core_apply_requested",
+        "core_action_requested",
+        "core_start_requested",
+        "core_stop_requested",
+        "core_restart_requested",
+        "core_xray_update_requested"
+      ]
+    },
+    {
+      "name": "telegram_delivery_status",
+      "values": [
+        "queued",
+        "delivered",
+        "retry_scheduled",
+        "skipped",
+        "failed"
+      ]
+    },
+    {
+      "name": "provisioning_step_kind",
+      "values": [
+        "preflight",
+        "agent_reachability",
+        "runtime_health",
+        "config_apply",
+        "bootstrap_verify",
+        "ssh_connect",
+        "sudo_check",
+        "xray_install",
+        "sidecar_runtime_install",
+        "node_install",
+        "service_install"
+      ]
+    },
+    {
+      "name": "provisioning_failure_category",
+      "values": [
+        "connectivity",
+        "authentication",
+        "authorization",
+        "validation",
+        "runtime",
+        "apply",
+        "bootstrap_verification",
+        "unknown"
+      ]
+    },
+    {
+      "name": "provisioning_recovery_decision",
+      "values": [
+        "ready",
+        "retry",
+        "reprovision",
+        "repair_first"
+      ]
+    },
+    {
+      "name": "resource_budget_status",
+      "values": [
+        "ok",
+        "warning",
+        "over_limit"
+      ]
+    },
+    {
+      "name": "alert_kind",
+      "values": [
+        "disk_usage",
+        "memory_usage",
+        "panel_memory_budget",
+        "node_offline",
+        "node_stale_heartbeat",
+        "node_config_drift",
+        "node_provisioning_stale",
+        "node_provisioning_failed",
+        "node_reported_apply_failed",
+        "node_runtime_alert"
+      ]
+    },
+    {
+      "name": "alert_severity",
+      "values": [
+        "warning",
+        "critical"
+      ]
+    },
+    {
+      "name": "alert_event_status",
+      "values": [
+        "activated",
+        "resolved"
+      ]
+    },
+    {
+      "name": "panel_access_mode",
+      "values": [
+        "domain_tls",
+        "ip_http",
+        "ip_self_signed_tls",
+        "reverse_proxy"
+      ]
+    },
+    {
+      "name": "panel_security_posture",
+      "values": [
+        "recommended",
+        "limited_without_domain",
+        "danger_plain_http_public",
+        "custom_reverse_proxy"
+      ]
+    },
+    {
+      "name": "panel_installer_payload_kind",
+      "values": [
+        "preflight_probe",
+        "dependency_install",
+        "install_binary",
+        "certificate_operation",
+        "listener_config",
+        "firewall_config",
+        "security_defaults",
+        "service_install",
+        "health_check"
+      ]
+    },
+    {
+      "name": "panel_installer_result_status",
+      "values": [
+        "accepted",
+        "rejected"
+      ]
+    },
+    {
+      "name": "panel_installer_job_status",
+      "values": [
+        "pending",
+        "running",
+        "succeeded",
+        "failed",
+        "rejected",
+        "expired"
+      ]
+    },
+    {
+      "name": "panel_installer_target_os",
+      "values": [
+        "linux",
+        "windows"
+      ]
+    },
+    {
+      "name": "panel_installer_target_arch",
+      "values": [
+        "x86_64",
+        "aarch64"
+      ]
+    },
+    {
+      "name": "panel_installer_package_channel",
+      "values": [
+        "stable",
+        "latest",
+        "pinned"
+      ]
+    },
+    {
+      "name": "runtime_component",
+      "values": [
+        "xray",
+        "hysteria2_sidecar",
+        "wireguard_node_native"
+      ]
+    },
+    {
+      "name": "runtime_component_action",
+      "values": [
+        "install",
+        "update",
+        "validate",
+        "start",
+        "stop",
+        "restart",
+        "status",
+        "logs"
+      ]
+    },
+    {
+      "name": "apply_timeline_stage",
+      "values": [
+        "fetch_runtime_config",
+        "fetch_route_credentials",
+        "render_xray_config",
+        "validate_xray_config",
+        "write_runtime_state",
+        "restart_xray",
+        "report_sync",
+        "report_apply_result"
+      ]
+    },
+    {
+      "name": "node_health_flag",
+      "values": [
+        "disabled",
+        "offline",
+        "degraded",
+        "unknown_status",
+        "stale_heartbeat",
+        "stale_metrics",
+        "config_drift",
+        "apply_pending",
+        "retry_backoff_active",
+        "rollback_available",
+        "reported_apply_failed",
+        "provisioning_running",
+        "provisioning_stale",
+        "provisioning_failed",
+        "runtime_alerts_active",
+        "disk_high",
+        "memory_high"
+      ]
+    }
+  ],
+  "schema_version": 3,
+  "schemas": [
+    {
+      "name": "ui_bootstrap",
+      "version": 2
+    },
+    {
+      "name": "ui_overview",
+      "version": 1
+    },
+    {
+      "name": "ui_contracts",
+      "version": 3
+    },
+    {
+      "name": "resource_budget",
+      "version": 1
+    },
+    {
+      "name": "subscription_client_access_preview",
+      "version": 1
+    },
+    {
+      "name": "subscription_bundle",
+      "version": 1
+    },
+    {
+      "name": "subscription_catalog",
+      "version": 8
+    },
+    {
+      "name": "node_runtime_config",
+      "version": 1
+    },
+    {
+      "name": "apply_plan",
+      "version": 2
+    },
+    {
+      "name": "protocol_capabilities",
+      "version": 5
+    },
+    {
+      "name": "node_runtime_validation",
+      "version": 1
+    },
+    {
+      "name": "panel_access_modes",
+      "version": 1
+    },
+    {
+      "name": "panel_install_plan",
+      "version": 1
+    },
+    {
+      "name": "panel_installer_bootstrap",
+      "version": 1
+    },
+    {
+      "name": "panel_installer_session",
+      "version": 1
+    },
+    {
+      "name": "node_provisioning_executor_contract",
+      "version": 1
+    }
+  ]
+}

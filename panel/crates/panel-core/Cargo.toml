@@ -1,0 +1,27 @@
+[package]
+name = "panel-core"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+aes-gcm.workspace = true
+argon2.workspace = true
+data-encoding.workspace = true
+hmac.workspace = true
+ipnet.workspace = true
+panel-config = { path = "../panel-config" }
+panel-domain = { path = "../panel-domain" }
+rand.workspace = true
+rcgen.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha1.workspace = true
+sha2.workspace = true
+sysinfo.workspace = true
+tokio.workspace = true
+urlencoding.workspace = true
+x25519-dalek.workspace = true
+zip.workspace = true

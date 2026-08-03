@@ -1,0 +1,17 @@
+[package]
+name = "node-app"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+axum.workspace = true
+node-config = { path = "../node-config" }
+node-core = { path = "../node-core" }
+node-domain = { path = "../node-domain" }
+serde.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

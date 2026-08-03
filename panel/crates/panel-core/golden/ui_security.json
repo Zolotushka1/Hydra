@@ -1,0 +1,21 @@
+{
+  "active_admin_session_count": 1,
+  "active_ban_count": 0,
+  "settings": {
+    "attempt_window_seconds": 300,
+    "block_for_seconds": 30,
+    "login_protection_enabled": true,
+    "max_failed_attempts": 3,
+    "session_ttl_seconds": 86400,
+    "smart_ban_enabled": true,
+    "trust_x_forwarded_for": false,
+    "trusted_proxy_cidrs": [],
+    "trusted_proxy_ips": []
+  },
+  "two_factor": {
+    "configured": false,
+    "confirmed_at_unix": null,
+    "enabled": false,
+    "two_step_enabled": false
+  }
+}

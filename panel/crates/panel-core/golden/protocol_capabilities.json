@@ -1,0 +1,303 @@
+{
+  "capabilities": [
+    {
+      "disabled_reason": null,
+      "display_name": "VLESS",
+      "modes": [
+        {
+          "notes": [],
+          "production_ready": true,
+          "requires_domain": false,
+          "requires_path": "<volatile>",
+          "requires_secret_material": false,
+          "security": "none",
+          "transport": "tcp"
+        },
+        {
+          "notes": [],
+          "production_ready": true,
+          "requires_domain": false,
+          "requires_path": "<volatile>",
+          "requires_secret_material": false,
+          "security": "tls",
+          "transport": "tcp"
+        },
+        {
+          "notes": [
+            "flow xtls-rprx-vision splices on Linux; cheapest CPU profile of the Reality options"
+          ],
+          "production_ready": true,
+          "requires_domain": false,
+          "requires_path": "<volatile>",
+          "requires_secret_material": false,
+          "security": "reality",
+          "transport": "tcp"
+        },
+        {
+          "notes": [],
+          "production_ready": true,
+          "requires_domain": true,
+          "requires_path": "<volatile>",
+          "requires_secret_material": false,
+          "security": "tls",
+          "transport": "ws"
+        },
+        {
+          "notes": [],
+          "production_ready": true,
+          "requires_domain": true,
+          "requires_path": "<volatile>",
+          "requires_secret_material": false,
+          "security": "tls",
+          "transport": "grpc"
+        },
+        {
+          "notes": [
+            "renderer compatibility still needs production tests"
+          ],
+          "production_ready": false,
+          "requires_domain": true,
+          "requires_path": "<volatile>",
+          "requires_secret_material": false,
+          "security": "tls",
+          "transport": "http_upgrade"
+        },
+        {
+          "notes": [
+            "QUIC support remains renderer-gated"
+          ],
+          "production_ready": false,
+          "requires_domain": false,
+          "requires_path": "<volatile>",
+          "requires_secret_material": false,
+          "security": "tls",
+          "transport": "quic"
+        },
+        {
+          "notes": [
+            "mode stream-one; auto resolves to it under Reality; the only mode compatible with flow xtls-rprx-vision"
+          ],
+          "production_ready": true,
+          "requires_domain": false,
+          "requires_path": "<volatile>",
+          "requires_secret_material": false,
+          "security": "reality",
+          "transport": "xhttp"
+        },
+        {
+          "notes": [
+            "mode packet-up behind a CDN or Nginx; Reality and Vision are both unavailable there"
+          ],
+          "production_ready": true,
+          "requires_domain": true,
+          "requires_path": "<volatile>",
+          "requires_secret_material": false,
+          "security": "tls",
+          "transport": "xhttp"
+        }
+      ],
+      "protocol": "vless",
+      "recommended_default": true,
+      "required_binaries": [
+        "xray"
+      ],
+      "required_secret_classes": [],
+      "runtime": "xray",
+      "runtime_owner": "xray",
+      "status": "production",
+      "supported_security_modes": [
+        "none",
+        "tls",
+        "reality"
+      ],
+      "supported_transports": [
+        "tcp",
+        "ws",
+        "grpc",
+        "http_upgrade",
+        "quic",
+        "xhttp"
+      ]
+    },
+    {
+      "disabled_reason": null,
+      "display_name": "Hysteria2",
+      "modes": [
+        {
+          "notes": [
+            "requires node-agent sidecar lifecycle and accepted executor session"
+          ],
+          "production_ready": true,
+          "requires_domain": true,
+          "requires_path": "<volatile>",
+          "requires_secret_material": true,
+          "security": "tls",
+          "transport": "quic"
+        }
+      ],
+      "protocol": "hysteria2",
+      "recommended_default": false,
+      "required_binaries": [
+        "hysteria"
+      ],
+      "required_secret_classes": [
+        "tls_certificate",
+        "hysteria_auth_secret"
+      ],
+      "runtime": "sidecar",
+      "runtime_owner": "sidecar",
+      "status": "production",
+      "supported_security_modes": [
+        "tls"
+      ],
+      "supported_transports": [
+        "quic"
+      ]
+    },
+    {
+      "disabled_reason": null,
+      "display_name": "WireGuard",
+      "modes": [
+        {
+          "notes": [
+            "requires node-agent WireGuard lifecycle and accepted executor session"
+          ],
+          "production_ready": true,
+          "requires_domain": false,
+          "requires_path": "<volatile>",
+          "requires_secret_material": true,
+          "security": "mutual_tls",
+          "transport": "udp"
+        }
+      ],
+      "protocol": "wireguard",
+      "recommended_default": false,
+      "required_binaries": [
+        "wg",
+        "wg-quick"
+      ],
+      "required_secret_classes": [
+        "wireguard_private_key",
+        "wireguard_peer_key"
+      ],
+      "runtime": "node_native",
+      "runtime_owner": "node_native",
+      "status": "production",
+      "supported_security_modes": [
+        "mutual_tls"
+      ],
+      "supported_transports": [
+        "udp"
+      ]
+    }
+  ],
+  "deployment_scenarios": [
+    {
+      "cdn_compatible": false,
+      "flow": "xtls-rprx-vision",
+      "id": "<volatile>",
+      "protocol": "vless",
+      "rationale": "Reality hides the handshake and defeats active probing; XHTTP hides the connection profile that follows it. Cost: stream-one is the slowest XHTTP mode.",
+      "recommended": true,
+      "security": "reality",
+      "title": "Direct connection, maximum stealth",
+      "transport": "xhttp",
+      "xhttp_mode": "stream-one"
+    },
+    {
+      "cdn_compatible": false,
+      "flow": "xtls-rprx-vision",
+      "id": "<volatile>",
+      "protocol": "vless",
+      "rationale": "Vision over TCP splices on Linux and is markedly cheaper on CPU, which matters at 1 vCPU. Cost: the post-handshake connection profile is not disguised.",
+      "recommended": false,
+      "security": "reality",
+      "title": "Direct connection, maximum throughput",
+      "transport": "tcp"
+    },
+    {
+      "cdn_compatible": true,
+      "id": "<volatile>",
+      "protocol": "vless",
+      "rationale": "packet-up is the only mode guaranteed to pass through a CDN or Nginx. Reality does not apply there because the intermediary terminates TLS, and Vision is incompatible with packet-up.",
+      "recommended": false,
+      "security": "tls",
+      "title": "Behind a CDN",
+      "transport": "xhttp",
+      "xhttp_mode": "packet-up"
+    }
+  ],
+  "runtime_components": [
+    {
+      "component": "xray",
+      "disabled_reason": null,
+      "owner": "xray",
+      "production_ready": true,
+      "required_binaries": [
+        "xray"
+      ],
+      "status": "production",
+      "supervised_by": "panel_or_node_agent",
+      "supported_actions": [
+        "install",
+        "update",
+        "validate",
+        "start",
+        "stop",
+        "restart",
+        "status",
+        "logs"
+      ],
+      "update_strategy": "official_xray_release_safe_swap",
+      "validation_strategy": "internal_raw_validation_then_xray_test_config"
+    },
+    {
+      "component": "hysteria2_sidecar",
+      "disabled_reason": null,
+      "owner": "sidecar",
+      "production_ready": true,
+      "required_binaries": [
+        "hysteria"
+      ],
+      "status": "production",
+      "supervised_by": "node_agent",
+      "supported_actions": [
+        "install",
+        "update",
+        "validate",
+        "start",
+        "stop",
+        "restart",
+        "status",
+        "logs"
+      ],
+      "update_strategy": "explicit_argv_or_provisioning_installer",
+      "validation_strategy": "binary_preflight_generated_config_and_executor_session"
+    },
+    {
+      "component": "wireguard_node_native",
+      "disabled_reason": null,
+      "owner": "node_native",
+      "production_ready": true,
+      "required_binaries": [
+        "wg",
+        "wg-quick"
+      ],
+      "status": "production",
+      "supervised_by": "node_agent",
+      "supported_actions": [
+        "install",
+        "update",
+        "validate",
+        "start",
+        "stop",
+        "restart",
+        "status",
+        "logs"
+      ],
+      "update_strategy": "os_package_or_explicit_argv",
+      "validation_strategy": "wg_quick_strip_generated_config_and_executor_session"
+    }
+  ],
+  "schema_version": 5
+}

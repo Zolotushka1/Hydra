@@ -1,0 +1,11 @@
+# Clippy's default argument threshold is 7. Eleven functions here sit at 8 or 9,
+# all of them constructors for view documents that genuinely carry that many
+# independent inputs: an apply-status view needs the node, the revision, the last
+# result, the timeline and the limits, and none of those groups into a meaningful
+# sub-struct on its own.
+#
+# Raised to 9 rather than disabled, so the lint still fires on the case that is a
+# real signal. It did fire on one: `xray_update_report` took fourteen arguments,
+# eleven of which were repeated verbatim at sixteen call sites. That became
+# `XrayUpdateProgress`.
+too-many-arguments-threshold = 9

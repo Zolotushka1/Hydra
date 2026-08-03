@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  # One pinned Xray version for both workspaces: panel and agent render config for
+  # the same binary, so testing them against different versions would let a render
+  # mismatch go unnoticed.
+  #
+  # The minimum is duplicated in code as MINIMUM_XRAY_VERSION in
+  # node/crates/node-core/src/lib.rs. When raising this, check that the constant
+  # has not fallen behind.
+  XRAY_VERSION: 26.6.27
+
+jobs:
+  # A panel change must not run the agent test suite and vice versa. Shared files
+  # such as this workflow run both.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      panel: ${{ steps.filter.outputs.panel }}
+      node: ${{ steps.filter.outputs.node }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            panel:
+              - 'panel/**'
+              - '.github/workflows/ci.yml'
+            node:
+              - 'node/**'
+              - '.github/workflows/ci.yml'
+
+  # The repository carries three copies of the licence: one at the root and one in
+  # each workspace, so that `panel/` or `node/` stays complete when vendored on its
+  # own. Copies drift silently, and a workspace shipping a different licence text
+  # than the root is a licensing defect rather than a formatting one.
+  license:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Licence copies are byte-identical
+        run: |
+          set -euo pipefail
+          root="$(sha256sum LICENSE | cut -d' ' -f1)"
+          for copy in panel/LICENSE node/LICENSE; do
+            actual="$(sha256sum "$copy" | cut -d' ' -f1)"
+            if [ "$actual" != "$root" ]; then
+              echo "$copy differs from the root LICENSE ($actual vs $root)" >&2
+              exit 1
+            fi
+          done
+          echo "all licence copies match $root"
+
+  test:
+    needs: changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - workspace: panel
+            enabled: ${{ needs.changes.outputs.panel }}
+          - workspace: node
+            enabled: ${{ needs.changes.outputs.node }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.workspace }}
+    steps:
+      - uses: actions/checkout@v4
+        if: matrix.enabled == 'true'
+
+      - uses: dtolnay/rust-toolchain@stable
+        if: matrix.enabled == 'true'
+
+      - uses: Swatinem/rust-cache@v2
+        if: matrix.enabled == 'true'
+        with:
+          workspaces: ${{ matrix.workspace }}
+
+      - name: Install pinned Xray
+        if: matrix.enabled == 'true'
+        run: |
+          set -euo pipefail
+          curl -fsSL -o xray.zip \
+            "https://github.com/XTLS/Xray-core/releases/download/v${XRAY_VERSION}/Xray-linux-64.zip"
+          unzip -q xray.zip xray -d "$RUNNER_TEMP/xray"
+          chmod +x "$RUNNER_TEMP/xray/xray"
+          "$RUNNER_TEMP/xray/xray" version
+          echo "HYDRA_TEST_XRAY_BINARY=$RUNNER_TEMP/xray/xray" >> "$GITHUB_ENV"
+
+      - name: Test
+        if: matrix.enabled == 'true'
+        # HYDRA_REQUIRE_XRAY_TEST=1 forbids the real-Xray check from skipping
+        # silently. That silent skip is what let the removed `allowInsecure` flag
+        # and the missing Reality renderer survive a green run.
+        env:
+          HYDRA_REQUIRE_XRAY_TEST: "1"
+        run: cargo test --workspace --all-targets
+
+      - name: Clippy
+        if: matrix.enabled == 'true'
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Format
+        if: matrix.enabled == 'true'
+        run: cargo fmt --all -- --check

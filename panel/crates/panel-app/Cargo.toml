@@ -1,0 +1,23 @@
+[package]
+name = "panel-app"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+axum.workspace = true
+axum-server.workspace = true
+http = "1.3.1"
+ipnet.workspace = true
+panel-config = { path = "../panel-config" }
+panel-core = { path = "../panel-core" }
+panel-domain = { path = "../panel-domain" }
+rustls.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tower-http.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

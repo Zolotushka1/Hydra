@@ -1,0 +1,49 @@
+{
+  "options": [
+    {
+      "description": "Recommended production mode with a domain and public trusted certificate.",
+      "label": "Domain + trusted HTTPS",
+      "mode": "domain_tls",
+      "recommended": true,
+      "requires_domain": true,
+      "tls_required": true,
+      "warnings": []
+    },
+    {
+      "description": "Fast setup for operators without a domain. Plain HTTP is not secure transport.",
+      "label": "IP-only quick setup",
+      "mode": "ip_http",
+      "recommended": false,
+      "requires_domain": false,
+      "tls_required": false,
+      "warnings": [
+        "Credentials are not protected by TLS.",
+        "Use only for temporary, private, or firewall-restricted access."
+      ]
+    },
+    {
+      "description": "Encrypted IP access without a domain. Browser warning is expected.",
+      "label": "IP + self-signed HTTPS",
+      "mode": "ip_self_signed_tls",
+      "recommended": false,
+      "requires_domain": false,
+      "tls_required": true,
+      "warnings": [
+        "Certificate is not publicly trusted.",
+        "Operator must verify the certificate fingerprint."
+      ]
+    },
+    {
+      "description": "For operators who manage TLS and proxying themselves.",
+      "label": "Custom reverse proxy",
+      "mode": "reverse_proxy",
+      "recommended": false,
+      "requires_domain": false,
+      "tls_required": false,
+      "warnings": [
+        "Do not trust forwarded headers without explicit trusted proxy CIDRs."
+      ]
+    }
+  ],
+  "schema_version": 1
+}

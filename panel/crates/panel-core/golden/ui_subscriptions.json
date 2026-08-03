@@ -1,0 +1,17 @@
+{
+  "clients_active": 0,
+  "clients_data_limit_reached": 0,
+  "clients_disabled": 0,
+  "clients_expired": 0,
+  "clients_expiring_within_day": 0,
+  "clients_revoked": 0,
+  "clients_total": 0,
+  "devices_active": 0,
+  "devices_revoked": 0,
+  "devices_total": 0,
+  "enrollment_grants_active": 0,
+  "enrollment_grants_consumed": 0,
+  "enrollment_grants_expired": 0,
+  "enrollment_grants_revoked": 0,
+  "plans_total": 0
+}

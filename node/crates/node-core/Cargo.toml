@@ -1,0 +1,24 @@
+[package]
+name = "node-core"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+hmac.workspace = true
+node-config = { path = "../node-config" }
+node-domain = { path = "../node-domain" }
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+sysinfo.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+zip.workspace = true
+
+[dev-dependencies]
+axum.workspace = true
+rcgen = "0.13.2"

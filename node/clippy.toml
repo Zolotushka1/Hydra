@@ -1,0 +1,9 @@
+# Clippy's default argument threshold is 7. One function sits at 9:
+# `queue_subscription_session_enforcement`, whose arguments are the enforcement
+# request as the panel sends it — adapter, action, session, runtime reference,
+# reason, verification flag, timestamp. They are one message, but the message is
+# defined on the panel side, and mirroring it into a node-local struct would add
+# a second shape to keep in step with it.
+#
+# Raised to 9 rather than disabled, so the lint keeps firing above that.
+too-many-arguments-threshold = 9

@@ -1,0 +1,36 @@
+{
+  "delivered": 0,
+  "failed": 0,
+  "queued": 0,
+  "retry_scheduled": 0,
+  "settings": {
+    "alert_policy": {
+      "cooldown_seconds": 300,
+      "enabled": true,
+      "included_alert_kinds": [
+        "disk_usage",
+        "memory_usage",
+        "panel_memory_budget",
+        "node_offline",
+        "node_stale_heartbeat",
+        "node_config_drift",
+        "node_provisioning_stale",
+        "node_provisioning_failed",
+        "node_reported_apply_failed",
+        "node_runtime_alert"
+      ],
+      "min_severity": "warning",
+      "notify_on_activation": true,
+      "notify_on_resolution": true
+    },
+    "bot_token_configured": "<volatile>",
+    "default_chat_id": null,
+    "enabled": false,
+    "notify_on_node_events": true,
+    "notify_on_node_health_alerts": true,
+    "notify_on_security_events": true,
+    "notify_on_system_alerts": true
+  },
+  "skipped": 0,
+  "total_events_buffered": 0
+}

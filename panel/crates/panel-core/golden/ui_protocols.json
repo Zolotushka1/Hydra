@@ -1,0 +1,54 @@
+{
+  "capabilities_schema_version": 5,
+  "protocols": [
+    {
+      "available": true,
+      "disabled_reason": null,
+      "display_name": "VLESS",
+      "protocol": "vless",
+      "recommended_default": true,
+      "status": "production",
+      "supported_security_modes": [
+        "none",
+        "tls",
+        "reality"
+      ],
+      "supported_transports": [
+        "tcp",
+        "ws",
+        "grpc",
+        "http_upgrade",
+        "quic",
+        "xhttp"
+      ]
+    },
+    {
+      "available": true,
+      "disabled_reason": null,
+      "display_name": "Hysteria2",
+      "protocol": "hysteria2",
+      "recommended_default": false,
+      "status": "production",
+      "supported_security_modes": [
+        "tls"
+      ],
+      "supported_transports": [
+        "quic"
+      ]
+    },
+    {
+      "available": true,
+      "disabled_reason": null,
+      "display_name": "WireGuard",
+      "protocol": "wireguard",
+      "recommended_default": false,
+      "status": "production",
+      "supported_security_modes": [
+        "mutual_tls"
+      ],
+      "supported_transports": [
+        "udp"
+      ]
+    }
+  ]
+}
