@@ -22,3 +22,15 @@ zip.workspace = true
 [dev-dependencies]
 axum.workspace = true
 rcgen = "0.13.2"
+
+# The stub is a fixture that tests execute, not a test itself, so it is not
+# compiled as a test harness.
+#
+# It still has to be built explicitly: `cargo test` compiles examples only to
+# hash-suffixed paths, and the plain `examples/hydra-test-stub` the fixtures copy
+# appears only from `cargo build --examples`. CI therefore builds examples before
+# running tests, and the fixtures fail with that command in the message rather
+# than skipping.
+[[example]]
+name = "hydra-test-stub"
+test = false

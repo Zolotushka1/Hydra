@@ -95,6 +95,14 @@ jobs:
           "$RUNNER_TEMP/xray/xray" version
           echo "HYDRA_TEST_XRAY_BINARY=$RUNNER_TEMP/xray/xray" >> "$GITHUB_ENV"
 
+      # Tests that need an external binary execute a stub built from an example.
+      # `cargo test` compiles examples only to hash-suffixed paths, so the plain
+      # name the fixtures copy exists only after an explicit build. Skipping this
+      # fails the suite on a cold cache while passing on a warm one.
+      - name: Build test fixtures
+        if: matrix.enabled == 'true'
+        run: cargo build --workspace --examples
+
       - name: Test
         if: matrix.enabled == 'true'
         # HYDRA_REQUIRE_XRAY_TEST=1 forbids the real-Xray check from skipping

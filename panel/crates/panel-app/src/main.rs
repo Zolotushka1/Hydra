@@ -70,12 +70,37 @@ use panel_domain::user::{
     CreateUserRequest, CreateUserTemplateRequest, ReportUserUsageRequest, UpdateUserRequest,
     UpdateUserTemplateRequest, UserActivityQuery, UsersQuery,
 };
+use std::sync::OnceLock;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tracing::{info, info_span, warn};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-const DASHBOARD_HTML: &str = include_str!("../../../web/dist/index.html");
+/// The built frontend entry point, read at run time rather than embedded.
+///
+/// `web/dist/` is a build output and is not in the repository, so an
+/// `include_str!` of it made the panel impossible to compile from a clean
+/// checkout — which is how it reached CI. Reading at run time also matches how
+/// `/assets` is already served: from `web/dist/assets` through `ServeDir`, so the
+/// directory has to be present next to the binary either way.
+///
+/// A missing file is reported in the response instead of being fatal: the API is
+/// fully usable without the frontend, and an operator who has not built it should
+/// be told that rather than losing the panel.
+fn dashboard_html() -> &'static str {
+    static CACHED: OnceLock<String> = OnceLock::new();
+    CACHED.get_or_init(|| {
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../web/dist/index.html");
+        std::fs::read_to_string(&path).unwrap_or_else(|error| {
+            warn!(%error, path = %path.display(), "frontend bundle is missing");
+            "<!doctype html><meta charset=\"utf-8\"><title>Hydra</title>\
+             <p>The frontend bundle is not built. Run <code>npm ci && npm run build</code> \
+             in <code>panel/web</code>. The HTTP API is unaffected."
+                .to_string()
+        })
+    })
+}
+
 const MAX_REQUEST_BODY_BYTES: usize = 4 * 1024 * 1024;
 
 #[tokio::main]
@@ -452,7 +477,7 @@ async fn root() -> Redirect {
 }
 
 async fn dashboard() -> Html<&'static str> {
-    Html(DASHBOARD_HTML)
+    Html(dashboard_html())
 }
 
 async fn public_subscription(
