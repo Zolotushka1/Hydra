@@ -136,6 +136,26 @@ jobs:
         if: matrix.enabled == 'true' && matrix.workspace == 'node'
         run: sh scripts/verify-release-package.sh
 
+      # The Leptos frontend is a workspace of its own, so `cargo test --workspace`
+      # above does not see it: it would otherwise be the one crate in the
+      # repository that nothing builds, free to stop compiling unnoticed. It is
+      # checked here on its own target instead.
+      #
+      # It also covers one half of keeping `panel-domain` usable from wasm: a
+      # *crate* dependency that does not support the target fails here. It does
+      # not cover the other half — `std::fs` and `std::net` compile for wasm32
+      # into stubs that fail at run time — which is what
+      # `domain_stays_free_of_host_only_apis` in panel-domain is for.
+      - name: Frontend
+        if: matrix.enabled == 'true' && matrix.workspace == 'panel'
+        working-directory: panel/web-leptos
+        run: |
+          set -euo pipefail
+          rustup target add wasm32-unknown-unknown
+          cargo fmt --all -- --check
+          cargo clippy --target wasm32-unknown-unknown --all-targets -- -D warnings
+          cargo build --target wasm32-unknown-unknown --release
+
       - name: Format
         if: matrix.enabled == 'true'
         run: cargo fmt --all -- --check
