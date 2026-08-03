@@ -22,6 +22,7 @@ beside it.
 | [Panel-node contract](panel-node-contract.md) | runtime config, apply plans, route credentials, least knowledge |
 | [Relay privacy](relay-privacy.md) | what a relay node is allowed to know |
 | [Schema versioning](schema-versioning.md) | how document versions change and what consumers must do |
+| [Testing policy](testing-policy.md) | how validation rules are tested, and why a green local run is not evidence |
 
 ## Workspace documentation
 

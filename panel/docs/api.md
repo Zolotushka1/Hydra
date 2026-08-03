@@ -2507,6 +2507,14 @@ Host binding fields:
 - catalog-client subscriptions filter hosts through the client's explicit node/cluster access policy
 - when a catalog client uses an explicit allowlist, unbound/global hosts are not included
 
+CDN fronting:
+
+- `behind_cdn` optional, defaults to `false`; declares that the connection address is served through a CDN
+- it lives on the host because a CDN stands in front of a connection address; one inbound may be published through several hosts, only some of them fronted
+- if any host serving an inbound sets it, that inbound must use XHTTP with `mode: packet-up`, and Reality on it is refused — a single fronted host is enough, so the conflict resolves towards the restriction
+- host-to-inbound binding uses the same node/cluster predicate that scopes Reality material
+- adding the field does not change the document shape for a reader, so no schema version is raised
+
 ### `GET /api/proxy-profiles`
 ### `POST /api/proxy-profiles`
 ### `PUT /api/proxy-profiles/{profile_id}`

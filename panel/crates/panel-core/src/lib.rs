@@ -9640,6 +9640,7 @@ impl NetworkRuntime {
             path: request.path,
             sni: request.sni,
             security: request.security,
+            behind_cdn: request.behind_cdn,
             node_id: request.node_id,
             cluster_id: request.cluster_id,
             created_at_unix: now,
@@ -9677,6 +9678,9 @@ impl NetworkRuntime {
         }
         if let Some(security) = request.security {
             host.security = security;
+        }
+        if let Some(behind_cdn) = request.behind_cdn {
+            host.behind_cdn = behind_cdn;
         }
         if request.node_id.is_some() {
             host.node_id = request.node_id;
@@ -9825,6 +9829,10 @@ impl NetworkRuntime {
                     .hosts
                     .get(&host.id)
                     .and_then(|source| source.cluster_id.clone()),
+                behind_cdn: self
+                    .hosts
+                    .get(&host.id)
+                    .is_some_and(|source| source.behind_cdn),
                 id: host.id,
                 remark: host.remark,
                 address: host.address,
@@ -9962,6 +9970,7 @@ impl NetworkRuntime {
                 path: host.path,
                 sni: host.sni,
                 security: format!("{:?}", host.security).to_ascii_lowercase(),
+                behind_cdn: host.behind_cdn,
                 reality_public_key: None,
                 reality_short_id: None,
                 node_id: host.node_id,
@@ -10038,6 +10047,7 @@ impl NetworkRuntime {
                 path: host.path,
                 sni: host.sni,
                 security: format!("{:?}", host.security).to_ascii_lowercase(),
+                behind_cdn: host.behind_cdn,
                 reality_public_key: None,
                 reality_short_id: None,
                 node_id: host.node_id,
@@ -18801,7 +18811,8 @@ fn build_xray_config_document(generated: &GeneratedCoreConfigPreview) -> XrayCon
         .collect();
 
     let raw_config = build_raw_xray_config(&inbounds, &outbounds, &routing, &policy);
-    let raw_config_validation = validate_raw_xray_config(&raw_config);
+    let raw_config_validation =
+        validate_raw_xray_config(&raw_config, &cdn_fronted_inbound_tags(generated));
 
     XrayConfigDocument {
         generated_at_unix: generated.generated_at_unix,
@@ -22098,7 +22109,16 @@ fn raw_xray_policy(policy: &XrayPolicyConfigDocument) -> serde_json::Value {
     })
 }
 
-fn validate_raw_xray_config(raw_config: &serde_json::Value) -> XrayRawConfigValidationReport {
+/// Validates a rendered Xray config.
+///
+/// `cdn_fronted_inbounds` names the inbounds reachable through a CDN. That is a
+/// property of the hosts pointing at an inbound, which the rendered config does
+/// not carry, so it is resolved by the caller and passed in rather than guessed
+/// here.
+fn validate_raw_xray_config(
+    raw_config: &serde_json::Value,
+    cdn_fronted_inbounds: &HashSet<String>,
+) -> XrayRawConfigValidationReport {
     let mut issues = Vec::new();
     if !raw_config.is_object() {
         push_xray_validation_issue(
@@ -22152,7 +22172,7 @@ fn validate_raw_xray_config(raw_config: &serde_json::Value) -> XrayRawConfigVali
 
     if let Some(inbounds) = inbounds {
         for (index, inbound) in inbounds.iter().enumerate() {
-            validate_raw_xray_inbound(inbound, index, &mut issues);
+            validate_raw_xray_inbound(inbound, index, cdn_fronted_inbounds, &mut issues);
         }
     }
     if let Some(outbounds) = outbounds {
@@ -22190,9 +22210,14 @@ fn validate_raw_xray_config(raw_config: &serde_json::Value) -> XrayRawConfigVali
 fn validate_raw_xray_inbound(
     inbound: &serde_json::Value,
     index: usize,
+    cdn_fronted_inbounds: &HashSet<String>,
     issues: &mut Vec<XrayRawConfigValidationIssue>,
 ) {
     let path = format!("$.inbounds[{index}]");
+    let behind_cdn = inbound
+        .get("tag")
+        .and_then(|value| value.as_str())
+        .is_some_and(|tag| cdn_fronted_inbounds.contains(tag));
     if inbound
         .get("tag")
         .and_then(|value| value.as_str())
@@ -22249,7 +22274,7 @@ fn validate_raw_xray_inbound(
         return;
     };
     validate_raw_xray_stream_settings(stream_settings, &path, issues);
-    validate_raw_xray_xhttp_semantics(inbound, stream_settings, &path, issues);
+    validate_raw_xray_xhttp_semantics(inbound, stream_settings, behind_cdn, &path, issues);
     validate_raw_xray_inbound_settings(inbound, protocol, &path, issues);
 }
 
@@ -22264,14 +22289,13 @@ fn validate_raw_xray_inbound(
 /// `vision_enabled` is read from the inbound's own clients: `flow` is a per-client
 /// field, so a rendered config carries the answer.
 ///
-/// `behind_cdn` is passed as `false` because the panel has no model for it — no
-/// inbound or host field records that traffic reaches this inbound through a CDN.
-/// The two CDN rules therefore stay unreachable here and are enforced only where
-/// the deployment scenario is known. This is a gap in the model, not a decision
-/// that CDNs are safe; closing it needs a field first.
+/// `behind_cdn` comes from the hosts that publish this inbound, resolved by
+/// `cdn_fronted_inbound_tags` before validation, because the rendered config
+/// carries no host information.
 fn validate_raw_xray_xhttp_semantics(
     inbound: &serde_json::Value,
     stream_settings: &serde_json::Value,
+    behind_cdn: bool,
     inbound_path: &str,
     issues: &mut Vec<XrayRawConfigValidationIssue>,
 ) {
@@ -22313,7 +22337,7 @@ fn validate_raw_xray_xhttp_semantics(
     validate_xhttp_stream_settings(
         &reconstructed,
         vision_enabled,
-        false,
+        behind_cdn,
         &format!("{inbound_path}.streamSettings"),
         issues,
     );
@@ -22434,6 +22458,21 @@ fn validate_xhttp_stream_settings(
     path: &str,
     issues: &mut Vec<XrayRawConfigValidationIssue>,
 ) {
+    let reality_requested = stream.security == "reality";
+
+    // Reality cannot pass a CDN whatever the transport is, so this is checked
+    // before the XHTTP-only rules rather than inside them. It used to sit after
+    // the early return below, which left `tcp + reality` behind a CDN accepted —
+    // the configuration this rule exists to refuse.
+    if behind_cdn && reality_requested {
+        push_xray_validation_issue(
+            issues,
+            &format!("{path}.security"),
+            "error",
+            "Reality cannot pass through a CDN; use real TLS behind a CDN",
+        );
+    }
+
     if stream.network != "xhttp" {
         if stream.xhttp_mode.is_some() {
             push_xray_validation_issue(
@@ -22443,12 +22482,24 @@ fn validate_xhttp_stream_settings(
                 "XHTTP mode is set on a non-XHTTP transport",
             );
         }
+        // A CDN forces packet-up, and packet-up exists only under XHTTP. Any
+        // other transport behind a CDN is refused rather than silently accepted.
+        if behind_cdn {
+            push_xray_validation_issue(
+                issues,
+                &format!("{path}.network"),
+                "error",
+                &format!(
+                    "a host behind a CDN requires XHTTP with mode packet-up, got network {}",
+                    stream.network
+                ),
+            );
+        }
         return;
     }
 
-    let reality_enabled = stream.security == "reality";
     let requested = stream.xhttp_mode.unwrap_or(XhttpMode::Auto);
-    let effective = requested.effective(reality_enabled);
+    let effective = requested.effective(reality_requested);
 
     // Vision lives inside stream-one and nowhere else. The axis of choice is the
     // transport, not "Vision versus XHTTP".
@@ -22469,20 +22520,12 @@ fn validate_xhttp_stream_settings(
         );
     }
 
-    // Reality does not pass through a CDN: the intermediary terminates TLS and the
-    // handshake substitution stops working.
+    // The Reality rule is checked above, before the transport branch, because it
+    // holds for every transport rather than only for XHTTP.
     //
     // Source: github.com/XTLS/REALITY — Reality substitutes the TLS handshake with
     // the target site, which requires an end-to-end connection to the server. A CDN
     // terminates TLS at its own edge, so there is nothing left to substitute.
-    if behind_cdn && reality_enabled {
-        push_xray_validation_issue(
-            issues,
-            &format!("{path}.security"),
-            "error",
-            "Reality cannot pass through a CDN; use real TLS behind a CDN",
-        );
-    }
 
     // Only packet-up is guaranteed to pass through a CDN or Nginx.
     //
@@ -22515,7 +22558,7 @@ fn validate_xhttp_stream_settings(
         );
     }
 
-    if requested == XhttpMode::Auto && reality_enabled {
+    if requested == XhttpMode::Auto && reality_requested {
         // Not an error but an explicit message: Xray expands auto to stream-one on
         // its own, and the operator should see which mode is actually in effect.
         //
@@ -24280,6 +24323,37 @@ fn reality_ambiguity_reason(host_id: &str, tags: &[String]) -> &'static str {
 ///
 /// The function used to return `true` unconditionally, which made every host count
 /// as serving every inbound.
+/// Inbounds reachable through at least one CDN-fronted host.
+///
+/// A CDN sits in front of the address a client connects to, which is what a host
+/// is, so the flag lives on the host. One inbound can be published through
+/// several hosts, and a single fronted host is enough: the inbound has to be
+/// renderable for that path too. The conflict therefore resolves towards the
+/// restriction — packet-up, and no Reality — rather than towards whichever host
+/// happens to be listed first.
+///
+/// Host-to-inbound binding uses `host_serves_inbound`, the same predicate that
+/// scopes Reality material, so the two cannot disagree about which hosts serve an
+/// inbound.
+fn cdn_fronted_inbound_tags(generated: &GeneratedCoreConfigPreview) -> HashSet<String> {
+    let mut tags = HashSet::new();
+    for inbound in &generated.inbounds {
+        let fronted = generated.users.iter().any(|user| {
+            user.inbounds
+                .iter()
+                .any(|candidate| candidate.tag == inbound.tag)
+                && user
+                    .hosts
+                    .iter()
+                    .any(|host| host.behind_cdn && host_serves_inbound(host, inbound))
+        });
+        if fronted {
+            tags.insert(inbound.tag.clone());
+        }
+    }
+    tags
+}
+
 fn host_serves_inbound(host: &GeneratedHost, inbound: &Inbound) -> bool {
     match (
         host.node_id.as_deref(),
@@ -27999,6 +28073,7 @@ mod tests {
 
     fn test_host() -> GeneratedHost {
         GeneratedHost {
+            behind_cdn: false,
             id: "host-a".to_string(),
             remark: "public host".to_string(),
             address: "vpn.example.test".to_string(),
@@ -28137,7 +28212,7 @@ mod tests {
         }
     }
 
-    fn generated_cluster_config() -> GeneratedCoreConfigPreview {
+    pub(crate) fn generated_cluster_config() -> GeneratedCoreConfigPreview {
         GeneratedCoreConfigPreview {
             generated_at_unix: 1,
             revision: "rev-a".to_string(),
@@ -30598,6 +30673,7 @@ mod tests {
                 .create_host(
                     &login.token,
                     CreateHostRequest {
+                        behind_cdn: false,
                         remark: "operator-secret-remark".to_string(),
                         address: "vpn-secret.example.com".to_string(),
                         port: 443,
@@ -30615,6 +30691,7 @@ mod tests {
                     &login.token,
                     &host.id,
                     UpdateHostRequest {
+                        behind_cdn: None,
                         remark: Some("operator-secret-remark-updated".to_string()),
                         address: Some("vpn-secret-updated.example.com".to_string()),
                         port: None,
@@ -34859,6 +34936,7 @@ mod tests {
         ];
         generated.hosts = vec![
             GeneratedHost {
+                behind_cdn: false,
                 id: "entry-host".to_string(),
                 remark: "entry".to_string(),
                 address: "entry.example.test".to_string(),
@@ -34872,6 +34950,7 @@ mod tests {
                 cluster_id: None,
             },
             GeneratedHost {
+                behind_cdn: false,
                 id: "exit-host".to_string(),
                 remark: "exit".to_string(),
                 address: "exit.example.test".to_string(),
@@ -35106,7 +35185,8 @@ mod tests {
             build_xray_config_document_from_runtime_config_document(&runtime_config);
         xray_config.raw_config["inbounds"][0]["settings"]["clients"][0]["id"] =
             serde_json::json!("not-a-uuid");
-        xray_config.raw_config_validation = validate_raw_xray_config(&xray_config.raw_config);
+        xray_config.raw_config_validation =
+            validate_raw_xray_config(&xray_config.raw_config, &HashSet::new());
         let render_summary = build_node_runtime_xray_render_summary(&runtime_config, &xray_config);
         let route_credential_status = NodeRouteCredentialStatusView {
             required_ref_count: 1,
@@ -35245,7 +35325,8 @@ mod tests {
             build_xray_config_document_from_runtime_config_document(&runtime_config);
         xray_config.raw_config["inbounds"][0]["settings"]["clients"][0]["id"] =
             serde_json::json!("not-a-uuid");
-        xray_config.raw_config_validation = validate_raw_xray_config(&xray_config.raw_config);
+        xray_config.raw_config_validation =
+            validate_raw_xray_config(&xray_config.raw_config, &HashSet::new());
 
         let render_summary = build_node_runtime_xray_render_summary(&runtime_config, &xray_config);
 
@@ -35946,7 +36027,7 @@ mod tests {
 
         let mut broken = document.raw_config.clone();
         broken["inbounds"][0]["streamSettings"]["tlsSettings"] = serde_json::Value::Null;
-        let report = validate_raw_xray_config(&broken);
+        let report = validate_raw_xray_config(&broken, &HashSet::new());
         assert!(!report.valid);
         assert!(report.issue_count > 0);
         assert!(report.issues.iter().any(|issue| {
@@ -35964,7 +36045,7 @@ mod tests {
             })
             .expect("stats API inbound is generated");
         stats_inbound["listen"] = serde_json::json!("0.0.0.0");
-        let exposed_report = validate_raw_xray_config(&exposed_stats);
+        let exposed_report = validate_raw_xray_config(&exposed_stats, &HashSet::new());
         assert!(!exposed_report.valid);
         assert!(
             exposed_report
@@ -36000,7 +36081,7 @@ mod tests {
         let mut vless_config = build_xray_config_document(&generated_cluster_config()).raw_config;
         vless_config["inbounds"][0]["settings"]["clients"][0]["id"] =
             serde_json::json!("not-a-uuid");
-        let vless_report = validate_raw_xray_config(&vless_config);
+        let vless_report = validate_raw_xray_config(&vless_config, &HashSet::new());
         assert!(!vless_report.valid);
         assert!(vless_report.issues.iter().any(|issue| {
             issue.path.ends_with(".settings.clients[0].id") && issue.reason.contains("UUID-like")
@@ -36024,7 +36105,7 @@ mod tests {
         config["inbounds"][0]["settings"]["clients"][0]["flow"] =
             serde_json::json!(VlessFlow::XtlsRprxVision.as_str());
 
-        let report = validate_raw_xray_config(&config);
+        let report = validate_raw_xray_config(&config, &HashSet::new());
 
         assert!(!report.valid, "packet-up with Vision must be refused");
         assert!(
@@ -36038,7 +36119,7 @@ mod tests {
         // The same inbound in the mode Vision needs passes.
         config["inbounds"][0]["streamSettings"]["xhttpSettings"]["mode"] =
             serde_json::json!("stream-one");
-        let report = validate_raw_xray_config(&config);
+        let report = validate_raw_xray_config(&config, &HashSet::new());
         assert!(
             !report
                 .issues
@@ -36059,7 +36140,7 @@ mod tests {
         config["inbounds"][0]["streamSettings"]["tlsSettings"]["certificates"][0]["keyFile"] =
             serde_json::json!("");
 
-        let report = validate_raw_xray_config(&config);
+        let report = validate_raw_xray_config(&config, &HashSet::new());
         assert!(!report.valid);
         assert!(
             report
@@ -36103,7 +36184,7 @@ mod tests {
         let document = build_xray_config_document(&generated_cluster_config());
         let mut broken = document.raw_config;
         broken["inbounds"][0]["streamSettings"]["tlsSettings"] = serde_json::Value::Null;
-        let internal_report = validate_raw_xray_config(&broken);
+        let internal_report = validate_raw_xray_config(&broken, &HashSet::new());
 
         let report = run_xray_external_validation(
             broken,
@@ -38381,6 +38462,7 @@ mod tests {
                 (
                     "host-a".to_string(),
                     Host {
+                        behind_cdn: false,
                         id: "host-a".to_string(),
                         remark: "allowed host".to_string(),
                         address: "vpn.example.test".to_string(),
@@ -38397,6 +38479,7 @@ mod tests {
                 (
                     "host-b".to_string(),
                     Host {
+                        behind_cdn: false,
                         id: "host-b".to_string(),
                         remark: "denied host".to_string(),
                         address: "denied.example.test".to_string(),
@@ -38413,6 +38496,7 @@ mod tests {
                 (
                     "host-global".to_string(),
                     Host {
+                        behind_cdn: false,
                         id: "host-global".to_string(),
                         remark: "global host".to_string(),
                         address: "global.example.test".to_string(),
@@ -38663,6 +38747,7 @@ mod tests {
                 })
                 .collect(),
             hosts: vec![GeneratedHost {
+                behind_cdn: false,
                 id: "host-a".to_string(),
                 remark: "Primary".to_string(),
                 address: "vpn.example.test".to_string(),
@@ -38738,6 +38823,7 @@ mod tests {
                 updated_at_unix: 1,
             }],
             hosts: vec![GeneratedHost {
+                behind_cdn: false,
                 id: "wireguard-host".to_string(),
                 remark: "WireGuard".to_string(),
                 address: "2001:db8::10".to_string(),
@@ -39413,6 +39499,305 @@ mod contract_golden_tests {
 }
 
 #[cfg(test)]
+mod cdn_fronting_tests {
+    use super::*;
+
+    /// A generated config whose single host declares itself CDN-fronted.
+    fn config_behind_cdn(
+        transport: &str,
+        security: &str,
+        mode: Option<XhttpMode>,
+    ) -> Vec<XrayRawConfigValidationIssue> {
+        let mut generated = crate::tests::generated_cluster_config();
+        for user in &mut generated.users {
+            for host in &mut user.hosts {
+                host.behind_cdn = true;
+                host.security = security.to_string();
+            }
+        }
+        for host in &mut generated.hosts {
+            host.behind_cdn = true;
+            host.security = security.to_string();
+        }
+
+        let mut config = build_xray_config_document(&generated).raw_config;
+        config["inbounds"][0]["streamSettings"]["network"] = serde_json::json!(transport);
+        config["inbounds"][0]["streamSettings"]["security"] = serde_json::json!(security);
+        if let Some(mode) = mode {
+            config["inbounds"][0]["streamSettings"]["xhttpSettings"] = serde_json::json!({
+                "path": "/x",
+                "mode": mode.as_str(),
+                "extra": { "xPaddingBytes": XHTTP_PADDING_BYTES }
+            });
+        }
+
+        validate_raw_xray_config(&config, &cdn_fronted_inbound_tags(&generated)).issues
+    }
+
+    fn refuses(issues: &[XrayRawConfigValidationIssue], fragment: &str) -> bool {
+        issues
+            .iter()
+            .any(|issue| issue.severity == "error" && issue.reason.contains(fragment))
+    }
+
+    /// The flag on a host reaches config validation.
+    ///
+    /// The binding is not free: `behind_cdn` sits on the host while the rule
+    /// constrains the inbound, so the two are joined by `host_serves_inbound`.
+    /// This drives the whole path — host flag, generated config, rendered config,
+    /// validation — rather than asserting on the resolver alone.
+    #[test]
+    fn a_cdn_fronted_host_forces_packet_up_on_its_inbound() {
+        assert!(
+            refuses(
+                &config_behind_cdn("xhttp", "tls", Some(XhttpMode::StreamOne)),
+                "only XHTTP mode packet-up is guaranteed"
+            ),
+            "stream-one behind a CDN must be refused"
+        );
+        assert!(
+            !refuses(
+                &config_behind_cdn("xhttp", "tls", Some(XhttpMode::PacketUp)),
+                "only XHTTP mode packet-up is guaranteed"
+            ),
+            "packet-up behind a CDN is the accepted combination"
+        );
+    }
+
+    /// Reality behind a CDN is refused on every transport, not only on XHTTP.
+    ///
+    /// The rule used to sit after the non-XHTTP early return, so `tcp + reality`
+    /// behind a CDN passed — the exact configuration the rule exists to refuse.
+    #[test]
+    fn reality_behind_a_cdn_is_refused_on_every_transport() {
+        for (transport, mode) in [
+            ("xhttp", Some(XhttpMode::PacketUp)),
+            ("tcp", None),
+            ("ws", None),
+            ("grpc", None),
+        ] {
+            assert!(
+                refuses(
+                    &config_behind_cdn(transport, "reality", mode),
+                    "Reality cannot pass through a CDN"
+                ),
+                "{transport} + reality behind a CDN must be refused"
+            );
+        }
+    }
+
+    /// A transport that cannot be packet-up is refused behind a CDN.
+    #[test]
+    fn a_non_xhttp_transport_behind_a_cdn_is_refused() {
+        for transport in ["tcp", "ws", "grpc", "httpupgrade"] {
+            assert!(
+                refuses(
+                    &config_behind_cdn(transport, "tls", None),
+                    "requires XHTTP with mode packet-up"
+                ),
+                "{transport} behind a CDN must be refused"
+            );
+        }
+    }
+
+    /// Without the flag nothing changes, so the default is genuinely inert.
+    #[test]
+    fn an_unfronted_host_constrains_nothing() {
+        let generated = crate::tests::generated_cluster_config();
+        assert!(
+            cdn_fronted_inbound_tags(&generated).is_empty(),
+            "the fixture declares no CDN, so no inbound may be treated as fronted"
+        );
+
+        let config = build_xray_config_document(&generated).raw_config;
+        let issues = validate_raw_xray_config(&config, &HashSet::new()).issues;
+        assert!(
+            !refuses(&issues, "CDN"),
+            "no CDN rule may fire without a fronted host: {issues:?}"
+        );
+    }
+
+    /// Only hosts that actually serve the inbound make it CDN-fronted.
+    ///
+    /// Scoping matters here for the same reason it matters for Reality material:
+    /// a host bound to another node must not impose its constraints on this
+    /// inbound.
+    #[test]
+    fn fronting_follows_host_to_inbound_scoping() {
+        let mut generated = crate::tests::generated_cluster_config();
+        let foreign_node = Some("node-somewhere-else".to_string());
+        for user in &mut generated.users {
+            for host in &mut user.hosts {
+                host.behind_cdn = true;
+                host.node_id = foreign_node.clone();
+                host.cluster_id = None;
+            }
+            for inbound in &mut user.inbounds {
+                inbound.node_id = Some("node-entry".to_string());
+                inbound.cluster_id = None;
+            }
+        }
+        for inbound in &mut generated.inbounds {
+            inbound.node_id = Some("node-entry".to_string());
+            inbound.cluster_id = None;
+        }
+
+        assert!(
+            cdn_fronted_inbound_tags(&generated).is_empty(),
+            "a CDN host bound to another node must not front this inbound"
+        );
+    }
+}
+
+#[cfg(test)]
+mod validator_isolation_tests {
+    use std::collections::BTreeSet;
+
+    /// Validators that are still exercised by calling them directly.
+    ///
+    /// Each entry is a rule whose test bypasses the path a request takes to reach
+    /// it, so the test proves the rule rejects bad input without proving the rule
+    /// runs. They predate the policy in `docs/testing-policy.md`.
+    ///
+    /// This list may shrink and must never grow. Converting an entry means
+    /// driving the same violation through the handler or document builder that
+    /// production uses; if the violation cannot be expressed that way, the rule
+    /// is not connected and the fix is to connect it, not to keep the direct
+    /// test.
+    const UNCONVERTED: &[&str] = &[
+        "validate_executor_step_report",
+        "validate_inbound_protocol_mode",
+        "validate_node_provisioning_executor_request",
+        "validate_node_provisioning_executor_workflow",
+        "validate_panel_installer_result",
+        "validate_protocol",
+        "validate_raw_xray_stream_settings",
+        "validate_register_subscription_device_request",
+        "validate_security_settings",
+        "validate_subscription_client_public_state",
+        "validate_subscription_session_report_capabilities",
+        "validate_telegram_settings",
+        "validate_username",
+        "validate_xray_update_url",
+    ];
+
+    /// `validate_raw_xray_config` is the entry point for raw config validation,
+    /// not a rule behind one: it is what `build_xray_config_document` calls, and
+    /// a raw config can also arrive from an operator rather than from the
+    /// renderer. Tests reaching it directly are using the public path.
+    const ENTRY_POINTS: &[&str] = &["validate_raw_xray_config"];
+
+    /// Line ranges of `#[cfg(test)]` modules, by brace matching.
+    fn test_module_ranges(lines: &[&str]) -> Vec<(usize, usize)> {
+        let mut ranges = Vec::new();
+        for (index, line) in lines.iter().enumerate() {
+            if line.trim() != "#[cfg(test)]" {
+                continue;
+            }
+            let Some(next) = lines.get(index + 1) else {
+                continue;
+            };
+            if !next.trim_start().starts_with("mod ") {
+                continue;
+            }
+            let mut depth: i32 = 0;
+            let mut opened = false;
+            let mut end = index + 1;
+            for (offset, body) in lines[index + 1..].iter().enumerate() {
+                depth += body.matches('{').count() as i32;
+                depth -= body.matches('}').count() as i32;
+                if body.contains('{') {
+                    opened = true;
+                }
+                if opened && depth <= 0 {
+                    end = index + 1 + offset;
+                    break;
+                }
+            }
+            ranges.push((index, end));
+        }
+        ranges
+    }
+
+    /// No validator gains a direct test without the list above being edited.
+    ///
+    /// Source scanning rather than a type-level mechanism, because the property
+    /// is about how a test calls a function and Rust has nothing that expresses
+    /// it. The check is exact about what it looks for: a `validate_*(` call that
+    /// is not a method call and not the definition itself.
+    #[test]
+    fn validator_rules_are_not_tested_in_isolation() {
+        let source = include_str!("lib.rs");
+        let lines: Vec<&str> = source.lines().collect();
+        let ranges = test_module_ranges(&lines);
+        assert!(
+            ranges.len() > 10,
+            "the test module scan found {} modules, so it is not working",
+            ranges.len()
+        );
+
+        let mut called_from_tests: BTreeSet<String> = BTreeSet::new();
+        for (index, line) in lines.iter().enumerate() {
+            if !ranges
+                .iter()
+                .any(|(start, end)| index >= *start && index <= *end)
+            {
+                continue;
+            }
+            let trimmed = line.trim_start();
+            if trimmed.starts_with("fn ") || trimmed.starts_with("//") {
+                continue;
+            }
+            let mut rest = *line;
+            while let Some(at) = rest.find("validate_") {
+                let before = rest[..at].chars().next_back();
+                let tail = &rest[at..];
+                let name: String = tail
+                    .chars()
+                    .take_while(|symbol| symbol.is_ascii_alphanumeric() || *symbol == '_')
+                    .collect();
+                let is_call = tail[name.len()..].starts_with('(');
+                let is_method = matches!(before, Some('.'));
+                if is_call && !is_method {
+                    called_from_tests.insert(name);
+                }
+                rest = &rest[at + 9..];
+            }
+        }
+
+        for entry in ENTRY_POINTS {
+            called_from_tests.remove(*entry);
+        }
+
+        let allowed: BTreeSet<String> = UNCONVERTED.iter().map(|item| item.to_string()).collect();
+
+        let added: Vec<&String> = called_from_tests.difference(&allowed).collect();
+        assert!(
+            added.is_empty(),
+            "these validators gained a direct test; drive the violation through the \
+             production entry point instead, per docs/testing-policy.md:\n  {}",
+            added
+                .iter()
+                .map(|item| item.as_str())
+                .collect::<Vec<_>>()
+                .join("\n  ")
+        );
+
+        let removed: Vec<&String> = allowed.difference(&called_from_tests).collect();
+        assert!(
+            removed.is_empty(),
+            "these validators no longer have a direct test; remove them from \
+             UNCONVERTED so the list keeps shrinking:\n  {}",
+            removed
+                .iter()
+                .map(|item| item.as_str())
+                .collect::<Vec<_>>()
+                .join("\n  ")
+        );
+    }
+}
+
+#[cfg(test)]
 mod versioning_policy_tests {
     use crate::schemas::{SchemaId, SchemaKind};
 
@@ -39703,6 +40088,7 @@ mod reality_link_and_fingerprint_tests {
             updated_at_unix: 0,
         };
         let mut host = GeneratedHost {
+            behind_cdn: false,
             id: "host-a".to_string(),
             remark: "reality".to_string(),
             address: "1.2.3.4".to_string(),
@@ -39900,22 +40286,62 @@ mod xhttp_tests {
         }
     }
 
-    fn issues_for(
+    /// Issues for one inbound, produced through the validator production calls.
+    ///
+    /// The rules used to be exercised by calling `validate_xhttp_stream_settings`
+    /// directly, which is why nobody noticed that config validation never called
+    /// it. Driving a rendered config through `validate_raw_xray_config` is what
+    /// makes these tests evidence that the rules run; see
+    /// `docs/testing-policy.md`.
+    ///
+    /// Only issues under this inbound's stream settings are returned, so an
+    /// unrelated problem elsewhere in the fixture cannot be mistaken for one of
+    /// these rules.
+    pub(crate) fn issues_for(
         network: &str,
         security: &str,
         mode: Option<XhttpMode>,
         vision: bool,
         cdn: bool,
     ) -> Vec<XrayRawConfigValidationIssue> {
-        let mut issues = Vec::new();
-        validate_xhttp_stream_settings(
-            &stream(network, security, mode),
-            vision,
-            cdn,
-            "inbounds[0].streamSettings",
-            &mut issues,
-        );
-        issues
+        let mut config =
+            build_xray_config_document(&crate::tests::generated_cluster_config()).raw_config;
+        let inbound = &mut config["inbounds"][0];
+        let tag = inbound["tag"]
+            .as_str()
+            .expect("fixture inbound has a tag")
+            .to_string();
+
+        inbound["streamSettings"]["network"] = serde_json::json!(network);
+        inbound["streamSettings"]["security"] = serde_json::json!(security);
+        if network == "xhttp" {
+            inbound["streamSettings"]["xhttpSettings"] = serde_json::json!({
+                "path": "/x",
+                "mode": mode.unwrap_or(XhttpMode::Auto).as_str(),
+                "extra": { "xPaddingBytes": XHTTP_PADDING_BYTES }
+            });
+        } else if let Some(mode) = mode {
+            inbound["streamSettings"]["xhttpSettings"] = serde_json::json!({
+                "mode": mode.as_str()
+            });
+        }
+        if vision {
+            inbound["settings"]["clients"][0]["flow"] =
+                serde_json::json!(VlessFlow::XtlsRprxVision.as_str());
+        }
+
+        let fronted: HashSet<String> = if cdn {
+            HashSet::from([tag.clone()])
+        } else {
+            HashSet::new()
+        };
+
+        let prefix = "$.inbounds[0].streamSettings";
+        validate_raw_xray_config(&config, &fronted)
+            .issues
+            .into_iter()
+            .filter(|issue| issue.path.starts_with(prefix))
+            .collect()
     }
 
     fn has_error(issues: &[XrayRawConfigValidationIssue], fragment: &str) -> bool {
@@ -40135,28 +40561,17 @@ mod deployment_scenario_tests {
     #[test]
     fn every_scenario_passes_its_own_xhttp_validation() {
         for scenario in deployment_scenarios() {
-            let stream = XrayStreamSettingsDocument {
-                network: inbound_transport_name(scenario.transport),
-                security: match scenario.security {
-                    ProtocolSecurityMode::Reality => "reality".to_string(),
-                    ProtocolSecurityMode::Tls => "tls".to_string(),
-                    ProtocolSecurityMode::MutualTls => "tls".to_string(),
-                    ProtocolSecurityMode::None => "none".to_string(),
-                },
-                path: Some("/x".to_string()),
-                host: None,
-                service_name: None,
-                allow_insecure: false,
-                xhttp_mode: scenario.xhttp_mode,
+            let security = match scenario.security {
+                ProtocolSecurityMode::Reality => "reality",
+                ProtocolSecurityMode::Tls | ProtocolSecurityMode::MutualTls => "tls",
+                ProtocolSecurityMode::None => "none",
             };
-
-            let mut issues = Vec::new();
-            validate_xhttp_stream_settings(
-                &stream,
+            let issues = crate::xhttp_tests::issues_for(
+                &inbound_transport_name(scenario.transport),
+                security,
+                scenario.xhttp_mode,
                 scenario.flow.is_some(),
                 scenario.cdn_compatible,
-                "inbounds[0].streamSettings",
-                &mut issues,
             );
 
             let errors: Vec<&str> = issues
@@ -40232,6 +40647,7 @@ mod host_inbound_scoping_tests {
 
     fn host(id: &str, node: Option<&str>, cluster: Option<&str>) -> GeneratedHost {
         GeneratedHost {
+            behind_cdn: false,
             id: id.to_string(),
             remark: id.to_string(),
             address: "vpn.example.test".to_string(),

@@ -23,6 +23,10 @@ pub struct GeneratedHost {
     pub path: Option<String>,
     pub sni: Option<String>,
     pub security: String,
+    /// The connection address is served through a CDN. Carried through to config
+    /// validation, where it decides the XHTTP mode and forbids Reality.
+    #[serde(default)]
+    pub behind_cdn: bool,
     /// Public half of the Reality material of the inbound this host serves. Not a
     /// secret: a client needs it to build its link. The private key never reaches
     /// this struct — it travels to the node over

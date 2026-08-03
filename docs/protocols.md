@@ -60,11 +60,28 @@ check them and will not. The panel enforces six:
 | Rule | Source |
 | --- | --- |
 | Vision requires `stream-one` | `mode` description in the XHTTP transport documentation: `stream-one` keeps one connection per request-response, so only it can splice |
-| Reality cannot sit behind a CDN | the CDN terminates TLS, so there is no handshake left to substitute |
-| behind a CDN only `packet-up` is guaranteed | `packet-up` uses a separate POST per packet and needs no long-lived stream support |
+| Reality cannot sit behind a CDN, on any transport | the CDN terminates TLS, so there is no handshake left to substitute |
+| behind a CDN the transport must be XHTTP with `packet-up` | `packet-up` uses a separate POST per packet and needs no long-lived stream support |
 | behind a CDN Vision is impossible | a consequence of the two rules above, reported separately because operators arrive with this pair |
 | `xhttp_mode` on a non-XHTTP transport is an error | not a silently ignored field |
 | `auto` with Reality is accepted with an `info` issue naming the resolved mode | Xray resolves `auto` to `stream-one` under Reality |
+
+## Declaring a CDN
+
+`Host.behind_cdn` says that the address clients connect to is served through a
+CDN. It sits on the host rather than on the inbound because a CDN stands in front
+of a connection address, and that is what a host is. The field is optional and
+defaults to `false`, so a host that never declared it keeps its meaning and the
+document shape is unchanged — it does not raise the schema version.
+
+One inbound can be published through several hosts, and only some of them may be
+fronted. **A single fronted host is enough**: the inbound has to work over that
+path too, so it must be XHTTP with `packet-up`, and Reality is refused on it. The
+conflict resolves towards the restriction rather than towards whichever host
+happens to be first in the list.
+
+Which hosts serve which inbound is decided by the same node-and-cluster predicate
+that scopes Reality material, so the two cannot disagree about the binding.
 
 Every rule carries a source citation in the code. The requirement is not a
 formality: a hand-written rule without one already asserted that Shadowsocks

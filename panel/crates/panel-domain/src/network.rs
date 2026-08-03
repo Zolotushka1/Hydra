@@ -266,6 +266,17 @@ pub struct Host {
     pub path: Option<String>,
     pub sni: Option<String>,
     pub security: HostSecurity,
+    /// The address clients connect to is served through a CDN.
+    ///
+    /// Declared on the host rather than the inbound because a CDN sits in front
+    /// of the connection address, and that is what a host is. One inbound can be
+    /// reached through several hosts, only some of them fronted.
+    ///
+    /// Optional with a `false` default: an existing host that never declared it
+    /// keeps its meaning, so the field does not change the document shape for a
+    /// reader and does not raise the schema version.
+    #[serde(default)]
+    pub behind_cdn: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub node_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -282,6 +293,8 @@ pub struct CreateHostRequest {
     pub path: Option<String>,
     pub sni: Option<String>,
     pub security: HostSecurity,
+    #[serde(default)]
+    pub behind_cdn: bool,
     pub node_id: Option<String>,
     pub cluster_id: Option<String>,
 }
@@ -294,6 +307,8 @@ pub struct UpdateHostRequest {
     pub path: Option<String>,
     pub sni: Option<String>,
     pub security: Option<HostSecurity>,
+    #[serde(default)]
+    pub behind_cdn: Option<bool>,
     pub node_id: Option<String>,
     pub cluster_id: Option<String>,
 }
