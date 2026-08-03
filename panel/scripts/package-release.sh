@@ -49,6 +49,17 @@ install -m 0755 "target/$target/release/panel-app" "$dist/$panel_name"
 install -m 0755 "target/$target/release/panel-installer-executor" "$dist/$executor_name"
 install -m 0755 scripts/install.sh "$dist/$installer_name"
 
+# The frontend is read from disk at run time, not embedded, so the bundle has to
+# travel with the binary. `web/` beside the executable is exactly where the panel
+# looks by default. Without this the operator gets a panel that serves the API
+# and an empty dashboard.
+[ -f web/dist/index.html ] || fail "web/dist is not built; run 'npm ci && npm run build' in web/"
+rm -rf "$dist/web"
+mkdir -p "$dist/web"
+cp -R web/dist/. "$dist/web/"
+find "$dist/web" -type d -exec chmod 0755 {} +
+find "$dist/web" -type f -exec chmod 0644 {} +
+
 for artifact in "$panel_name" "$executor_name" "$installer_name"; do
   (
     cd "$dist"

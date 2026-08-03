@@ -116,6 +116,19 @@ jobs:
         if: matrix.enabled == 'true'
         run: cargo clippy --workspace --all-targets -- -D warnings
 
+      # The dashboard is read from disk at run time, so whether an operator gets
+      # a working panel is a property of the release package rather than of the
+      # code. Nothing in the test suite can see that. This builds a package,
+      # deploys it to an unrelated directory, starts the binary and asks it for
+      # the page and for the hashed asset the page references.
+      - name: Verify the release package serves the frontend
+        if: matrix.enabled == 'true' && matrix.workspace == 'panel'
+        run: |
+          set -euo pipefail
+          npm --prefix web ci
+          npm --prefix web run build
+          sh scripts/verify-release-package.sh
+
       - name: Format
         if: matrix.enabled == 'true'
         run: cargo fmt --all -- --check

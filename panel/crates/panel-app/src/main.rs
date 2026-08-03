@@ -70,33 +70,82 @@ use panel_domain::user::{
     CreateUserRequest, CreateUserTemplateRequest, ReportUserUsageRequest, UpdateUserRequest,
     UpdateUserTemplateRequest, UserActivityQuery, UsersQuery,
 };
+use std::path::Path;
 use std::sync::OnceLock;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tracing::{info, info_span, warn};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+/// Where the built frontend lives at run time.
+///
+/// Resolved from the running executable, never from `CARGO_MANIFEST_DIR`. That
+/// variable holds the path of the machine the binary was *built* on, so a release
+/// binary looked for the bundle in a directory that exists only on the build
+/// host — which is why `/assets` returned 404 in every installed deployment while
+/// working in development.
+///
+/// Order: the explicit override, then `web/` beside the executable, which is the
+/// layout `scripts/package-release.*` produce.
+///
+/// The source-tree fallback exists only in debug builds. A release binary that
+/// silently read the build host's checkout would make every packaging check
+/// meaningless — it would find the bundle on the build machine whether or not the
+/// package contained one, and fail only for the operator. This was not
+/// hypothetical: the first version of the packaging check passed against a
+/// package with no frontend in it at all.
+fn web_dist_dir() -> &'static Path {
+    static RESOLVED: OnceLock<PathBuf> = OnceLock::new();
+    RESOLVED.get_or_init(|| {
+        if let Ok(configured) = std::env::var("HYDRA_WEB_DIST_DIR") {
+            let path = PathBuf::from(configured);
+            if !path.join("index.html").is_file() {
+                warn!(path = %path.display(), "HYDRA_WEB_DIST_DIR has no index.html");
+            }
+            return path;
+        }
+
+        let beside_executable = std::env::current_exe()
+            .ok()
+            .and_then(|exe| exe.parent().map(|dir| dir.join("web")));
+        if let Some(path) = beside_executable.as_ref()
+            && path.join("index.html").is_file()
+        {
+            return path.clone();
+        }
+
+        #[cfg(debug_assertions)]
+        let fallback = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../web/dist");
+        #[cfg(not(debug_assertions))]
+        let fallback = beside_executable.unwrap_or_else(|| PathBuf::from("web"));
+
+        fallback
+    })
+}
+
 /// The built frontend entry point, read at run time rather than embedded.
 ///
 /// `web/dist/` is a build output and is not in the repository, so an
 /// `include_str!` of it made the panel impossible to compile from a clean
-/// checkout — which is how it reached CI. Reading at run time also matches how
-/// `/assets` is already served: from `web/dist/assets` through `ServeDir`, so the
-/// directory has to be present next to the binary either way.
+/// checkout. Reading at run time also matches how `/assets` is served, so the
+/// bundle has to be present beside the binary either way.
 ///
 /// A missing file is reported in the response instead of being fatal: the API is
-/// fully usable without the frontend, and an operator who has not built it should
-/// be told that rather than losing the panel.
+/// fully usable without the frontend, and an operator who has not built or
+/// packaged it should be told which directory was searched.
 fn dashboard_html() -> &'static str {
     static CACHED: OnceLock<String> = OnceLock::new();
     CACHED.get_or_init(|| {
-        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../web/dist/index.html");
+        let path = web_dist_dir().join("index.html");
         std::fs::read_to_string(&path).unwrap_or_else(|error| {
             warn!(%error, path = %path.display(), "frontend bundle is missing");
-            "<!doctype html><meta charset=\"utf-8\"><title>Hydra</title>\
-             <p>The frontend bundle is not built. Run <code>npm ci && npm run build</code> \
-             in <code>panel/web</code>. The HTTP API is unaffected."
-                .to_string()
+            format!(
+                "<!doctype html><meta charset=\"utf-8\"><title>Hydra</title>\
+                 <p>The frontend bundle was not found in {}. Build it with \
+                 <code>npm ci &amp;&amp; npm run build</code> in <code>panel/web</code>, or set \
+                 <code>HYDRA_WEB_DIST_DIR</code>. The HTTP API is unaffected.",
+                path.display()
+            )
         })
     })
 }
@@ -134,7 +183,7 @@ async fn main() -> anyhow::Result<()> {
             }
         }
     });
-    let dist_assets_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../web/dist/assets");
+    let dist_assets_dir = web_dist_dir().join("assets");
 
     // The router is built solely by walking ROUTE_TABLE. There is no second route
     // list in the project: both the served surface and the GET /api/ui/contracts

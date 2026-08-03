@@ -107,6 +107,24 @@ A persisted format is a schema like any other: changes to one are versioned
 through the [schema registry](schema-versioning.md), and migration impact is
 documented rather than discovered.
 
+## Frontend bundle
+
+The panel serves the built frontend from disk rather than embedding it. The
+directory is resolved in this order:
+
+1. `HYDRA_WEB_DIST_DIR`, if set;
+2. `web/` beside the panel executable — the layout the release packaging
+   produces;
+3. in debug builds only, the source checkout.
+
+The source fallback is absent from release binaries on purpose. A release binary
+that read the build host's checkout would find the bundle on the machine that
+built it whether or not the package contained one, so the failure would reach the
+operator and no check on the build host could see it.
+
+A missing bundle is not fatal: the page reports which directory was searched, and
+the HTTP API is unaffected.
+
 ## Xray integration paths
 
 Xray validation and updates are configured separately, since they touch an

@@ -39,6 +39,19 @@ Copy-Item -LiteralPath "target/release/panel-app.exe" -Destination (Join-Path $D
 Copy-Item -LiteralPath "target/release/panel-installer-executor.exe" -Destination (Join-Path $DistDir $executorName)
 Copy-Item -LiteralPath "scripts/install.ps1" -Destination (Join-Path $DistDir $installerName)
 
+# The frontend is read from disk at run time, not embedded, so the bundle has to
+# travel with the binary. "web" beside the executable is exactly where the panel
+# looks by default. Without this the operator gets a panel that serves the API
+# and an empty dashboard.
+if (-not (Test-Path -LiteralPath "web/dist/index.html")) {
+    throw "web/dist is not built; run 'npm ci && npm run build' in web/."
+}
+$webDir = Join-Path $DistDir "web"
+if (Test-Path -LiteralPath $webDir) {
+    Remove-Item -LiteralPath $webDir -Recurse -Force
+}
+Copy-Item -LiteralPath "web/dist" -Destination $webDir -Recurse
+
 foreach ($artifact in @($panelName, $executorName, $installerName)) {
     $artifactPath = Join-Path $DistDir $artifact
     $sha256 = (Get-FileHash -LiteralPath $artifactPath -Algorithm SHA256).Hash.ToLowerInvariant()
