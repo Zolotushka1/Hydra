@@ -5,6 +5,8 @@ pub mod installer;
 pub mod network;
 pub mod node;
 pub mod provisioning;
+pub mod routes;
+pub mod schemas;
 #[macro_use]
 mod registry;
 pub mod security;

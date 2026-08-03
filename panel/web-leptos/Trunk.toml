@@ -1,0 +1,17 @@
+# The bundle lands in `dist/`, the same place vite writes the SolidJS shell, but
+# under `web-leptos/` rather than `web/`. Both can be built at once while the two
+# frontends run side by side, which is the point of keeping the old one until
+# this reaches parity.
+[build]
+target = "index.html"
+dist = "dist"
+
+# Assets are requested from the panel at `/assets/...`, which is where
+# `panel-app` mounts the bundle directory. Without this trunk emits paths
+# relative to the document root and the panel serves nothing at them.
+public_url = "/assets/"
+
+[serve]
+# Development only. The panel is the origin in production; this proxy exists so
+# `trunk serve` can talk to a locally running panel without CORS.
+port = 8082

@@ -244,6 +244,22 @@ pub struct AuthenticatedAdmin {
     pub session: SessionView,
 }
 
+/// The admin login request body.
+///
+/// Lives here rather than in `panel-app` because the Leptos frontend sends it
+/// and must send exactly what the server parses. `LoginSuccess` and
+/// `LoginFailure` were already here; the request was the one half of the
+/// exchange a client could only reproduce by hand.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LoginRequest {
+    pub username: String,
+    pub password: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub two_factor_code: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub challenge_token: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LoginSuccess {
     pub token: String,

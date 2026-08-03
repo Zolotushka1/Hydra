@@ -1,0 +1,27 @@
+[package]
+name = "hydra-web-leptos"
+edition = "2024"
+license = "AGPL-3.0-only"
+version = "0.1.0"
+rust-version = "1.88"
+publish = false
+
+# A workspace of its own, not a member of the panel workspace.
+#
+# Everything here builds for wasm32-unknown-unknown and nothing here builds for
+# the host. Joining the panel workspace would put this crate into every
+# `cargo test --workspace --all-targets` and `cargo clippy --workspace` the CI
+# runs, where it would be compiled for Linux and fail on wasm-bindgen. The panel
+# workspace excludes this directory explicitly so the boundary is stated rather
+# than implied.
+[workspace]
+
+[dependencies]
+panel-domain = { path = "../crates/panel-domain" }
+leptos = { version = "0.8", features = ["csr"] }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+gloo-net = { version = "0.6", features = ["http"] }
+wasm-bindgen = "0.2"
+web-sys = { version = "0.3", features = ["Storage", "Window"] }
+console_error_panic_hook = "0.1"

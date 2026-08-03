@@ -6,6 +6,10 @@ members = [
     "crates/panel-domain",
     "crates/panel-installer-executor",
 ]
+# The Leptos frontend is its own workspace: it builds only for
+# wasm32-unknown-unknown, and joining this one would put it into every
+# `cargo test --workspace` and `cargo clippy --workspace` the CI runs.
+exclude = ["web-leptos"]
 resolver = "2"
 
 [workspace.package]

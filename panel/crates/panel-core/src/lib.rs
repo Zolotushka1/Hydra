@@ -1,5 +1,19 @@
-pub mod routes;
-pub mod schemas;
+/// The HTTP surface table, re-exported from `panel-domain`.
+///
+/// It lives in the domain crate because the Leptos frontend needs the same
+/// constant and cannot depend on this one: `panel-core` pulls in tokio, reqwest
+/// and the crypto stack, none of which build for `wasm32-unknown-unknown`. The
+/// table itself needs only serde.
+///
+/// Re-exported rather than moved out of sight so that `panel_core::routes` keeps
+/// resolving for every existing caller.
+pub use panel_domain::routes;
+/// The schema version registry, re-exported from `panel-domain`.
+///
+/// Moved for the same reason as `routes`: the frontend compares the version it
+/// was built against with the version the panel serves, and cannot depend on
+/// this crate to do it. The registry needs only serde.
+pub use panel_domain::schemas;
 
 use std::{
     collections::{HashMap, HashSet},

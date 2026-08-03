@@ -45,7 +45,7 @@ use panel_domain::provisioning::{
 };
 use panel_domain::security::{
     ApplySecurityPresetRequest, AuditEventsQuery, AuthenticatedAdmin, CreateBanRequest,
-    DisableTwoFactorRequest, EnableTwoFactorRequest, LoginFailure, SecurityError,
+    DisableTwoFactorRequest, EnableTwoFactorRequest, LoginFailure, LoginRequest, SecurityError,
     UpdateSecuritySettingsRequest, UpdateTwoFactorTwoStepRequest,
 };
 use panel_domain::subscription::{
@@ -3801,14 +3801,6 @@ async fn set_security_headers(request: axum::extract::Request, next: Next) -> Re
         HeaderValue::from_static("no-store"),
     );
     response
-}
-
-#[derive(Debug, serde::Deserialize)]
-struct LoginRequest {
-    username: String,
-    password: String,
-    two_factor_code: Option<String>,
-    challenge_token: Option<String>,
 }
 
 #[derive(Debug, serde::Deserialize)]
