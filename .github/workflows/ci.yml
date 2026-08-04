@@ -58,6 +58,16 @@ jobs:
           done
           echo "all licence copies match $root"
 
+  # Runs on every change, not behind the paths filter: a leak arrives with
+  # whatever commit happens to carry it, and the file that leaks is by definition
+  # not one the filter expects.
+  tracked-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No runtime state is tracked
+        run: sh scripts/check-tracked-files.sh
+
   test:
     needs: changes
     runs-on: ubuntu-latest
@@ -141,11 +151,12 @@ jobs:
       # repository that nothing builds, free to stop compiling unnoticed. It is
       # checked here on its own target instead.
       #
-      # It also covers one half of keeping `panel-domain` usable from wasm: a
-      # *crate* dependency that does not support the target fails here. It does
-      # not cover the other half — `std::fs` and `std::net` compile for wasm32
-      # into stubs that fail at run time — which is what
-      # `domain_stays_free_of_host_only_apis` in panel-domain is for.
+      # It also covers one third of keeping `panel-domain` usable from wasm: a
+      # crate dependency that does not compile for the target fails here. The
+      # other two are tests in panel-domain, because a build cannot see them:
+      # `domain_source_is_free_of_host_only_apis` for std calls that compile into
+      # stubs and fail at run time, and `dependencies_stay_minimal` for a crate
+      # that compiles and then traps in the browser.
       - name: Frontend
         if: matrix.enabled == 'true' && matrix.workspace == 'panel'
         working-directory: panel/web-leptos
