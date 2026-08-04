@@ -39304,6 +39304,19 @@ mod contract_golden_tests {
         if trimmed.contains("BEGIN ") || trimmed.contains("PRIVATE KEY") {
             return true;
         }
+        // A long run of lowercase hex. Checked separately because the mixed-case
+        // rule below cannot see it: subscription tokens, session ids and node
+        // token hashes are all lowercase hex, and three subscription tokens
+        // reached this repository while this function was already guarding the
+        // golden documents. The key name caught them there; key names are an
+        // open list and this is not.
+        if trimmed.len() >= 32
+            && trimmed.chars().all(|symbol| symbol.is_ascii_hexdigit())
+            && !trimmed.chars().any(|symbol| symbol.is_ascii_uppercase())
+        {
+            return true;
+        }
+
         trimmed.len() >= 32
             && trimmed.chars().all(|symbol| {
                 symbol.is_ascii_alphanumeric() || matches!(symbol, '+' | '/' | '=' | '_' | '-')
@@ -39324,6 +39337,23 @@ mod contract_golden_tests {
             .filter_map(|line| line.trim().strip_prefix("key "))
             .collect()
     }
+
+    /// Document paths whose value is a published derived identifier.
+    ///
+    /// Scoped to the exact path, not to the value: the same shape elsewhere is a
+    /// finding. `session_id` is `sha256(token)` — the test
+    /// `revoking_a_session_uses_its_public_id` asserts it differs from the token,
+    /// and authentication matches the raw token, which cannot be recovered from
+    /// the hash. It is 64 lowercase hex characters, which is what a subscription
+    /// token also looks like, so the shape rule cannot tell them apart and the
+    /// path has to.
+    const PUBLISHED_DERIVED_IDENTIFIERS: &[&str] = &[
+        "$.admin.session.session_id",
+        // A content hash of the generated configuration, published so a node can
+        // tell whether what it applied is current. Nothing authenticates with
+        // it, and it is derived from data the admin surface already carries.
+        "$.core.generated_revision",
+    ];
 
     /// Walks a document: a secret-bearing field must not carry a non-empty string,
     /// and no string value may look like a credential.
@@ -39351,7 +39381,8 @@ mod contract_golden_tests {
                 }
             }
             Value::String(text) => assert!(
-                !looks_like_credential_material(text),
+                PUBLISHED_DERIVED_IDENTIFIERS.contains(&path)
+                    || !looks_like_credential_material(text),
                 "{document}: {path} looks like credential material: {text}"
             ),
             _ => {}

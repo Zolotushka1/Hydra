@@ -1,7 +1,7 @@
 # Testing policy
 
-Two rules, both written after the same failure happened repeatedly: a check
-passed while the thing it was supposed to protect did not work.
+Rules written after the same failure happened repeatedly: a check passed while
+the thing it was supposed to protect did not work.
 
 ## A validator is tested through the entry point production uses
 
@@ -70,11 +70,35 @@ What follows:
   still found the bundle in the build host's source tree. The check was worthless
   until the fallback was restricted to debug builds and the failure reproduced.
 
+## A negative control aims at what would refute
+
+Before trusting a check, make it fail on purpose. But a control that merely
+*agrees* with the belief being tested proves nothing: **a control must aim at
+what distinguishes the hypothesis from its negation, not at what is compatible
+with it.**
+
+This is easy to get wrong while feeling rigorous. Two examples from this
+repository, a day apart:
+
+- The secret canary list was moved to one shared file so the golden guard and
+  the tracked-content check could not drift. The control deleted a marker from
+  the shared file and expected the Rust guard to go red. It stayed green — that
+  test case was caught by the *shape* of the value, not by the key name, so it
+  passed either way. The control was compatible with sharing and also compatible
+  with not sharing. A case that only the key marker can reject had to be added
+  before deleting a line proved anything.
+- The leak assessment read `admin.json`, the file that agreed with the
+  conclusion already formed, and stopped. What would have refuted it was
+  `users.json`, which was never opened, and which held three live subscription
+  tokens.
+
+The habit that prevents both: ask what would show the opposite, and go look at
+that.
+
 ## Checks that cannot fail
 
-The last point generalises. Before trusting a new check, make it fail on purpose:
-break the thing it guards and confirm it goes red. A check that has never been
-observed failing is an assertion about the author's intent, not about the system.
+A check that has never been observed failing is an assertion about the author's
+intent, not about the system.
 
 The same reasoning covers skips. `HYDRA_REQUIRE_XRAY_TEST=1` in CI forbids the
 real-Xray test from skipping when no binary is configured, because a silent skip
