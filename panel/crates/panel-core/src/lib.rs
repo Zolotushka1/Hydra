@@ -39312,15 +39312,18 @@ mod contract_golden_tests {
             && trimmed.chars().any(|symbol| symbol.is_ascii_digit())
     }
 
-    const SECRET_KEY_MARKERS: &[&str] = &[
-        "token",
-        "secret",
-        "password",
-        "private_key",
-        "hash",
-        "hmac",
-        "credential",
-    ];
+    /// Key markers, read from the list `scripts/check-tracked-content.py` uses.
+    ///
+    /// One list, because two would drift. `subscription_token` was already a
+    /// marker here when three of them were committed to this repository inside
+    /// users.json: the knowledge that the string is secret existed, and the file
+    /// that leaked was checked by nothing that held it.
+    fn secret_key_markers() -> Vec<&'static str> {
+        include_str!("../../../../scripts/secret-canaries.txt")
+            .lines()
+            .filter_map(|line| line.trim().strip_prefix("key "))
+            .collect()
+    }
 
     /// Walks a document: a secret-bearing field must not carry a non-empty string,
     /// and no string value may look like a credential.
@@ -39329,7 +39332,7 @@ mod contract_golden_tests {
             Value::Object(fields) => {
                 for (key, field) in fields {
                     let lowered = key.to_ascii_lowercase();
-                    if SECRET_KEY_MARKERS
+                    if secret_key_markers()
                         .iter()
                         .any(|marker| lowered.contains(marker))
                         && let Value::String(text) = field
@@ -39509,6 +39512,18 @@ mod contract_golden_tests {
             assert_no_secret_material("probe", &bearer, "$");
         });
         assert!(caught.is_err(), "a secret-bearing field must be rejected");
+
+        // Short and unremarkable, so the shape rule cannot see it. Only the key
+        // marker rejects this, which is what makes it the case that fails if the
+        // shared canary list stops being read.
+        let by_key_alone = serde_json::json!({ "auth_token": "abc" });
+        let caught = std::panic::catch_unwind(|| {
+            assert_no_secret_material("probe", &by_key_alone, "$");
+        });
+        assert!(
+            caught.is_err(),
+            "a value under a secret-marked key must be rejected on the key alone"
+        );
 
         let legitimate = serde_json::json!({
             "name": "node_auth_token_rotated",

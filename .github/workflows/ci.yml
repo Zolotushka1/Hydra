@@ -68,6 +68,13 @@ jobs:
       - name: No runtime state is tracked
         run: sh scripts/check-tracked-files.sh
 
+      # The check above matches on what a file is. This one matches on what is
+      # inside it, because the leak it was written after was a value: three
+      # subscription tokens, which would have passed the path check just as
+      # easily inside fixture.json or a README.
+      - name: No credential material in tracked contents
+        run: python3 scripts/check-tracked-content.py
+
   test:
     needs: changes
     runs-on: ubuntu-latest
