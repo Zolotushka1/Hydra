@@ -1,3 +1,0 @@
-{"username":"alice","kind":"created","actor_username":"dev-admin","detail":"user created","traffic_delta_bytes":null,"total_used_traffic_bytes":0,"created_at_unix":1785838841}
-{"username":"bob","kind":"created","actor_username":"dev-admin","detail":"user created","traffic_delta_bytes":null,"total_used_traffic_bytes":0,"created_at_unix":1785838841}
-{"username":"carol","kind":"created","actor_username":"dev-admin","detail":"user created","traffic_delta_bytes":null,"total_used_traffic_bytes":0,"created_at_unix":1785838841}

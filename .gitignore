@@ -21,6 +21,9 @@ panel/web/vite.config.d.ts
 # on start and have no place in the repository.
 data/
 .smoke/
+# Frontend development state, created by web-leptos/scripts/dev.sh. Same
+# contents as data/: an admin hash, seeded users, the audit log.
+.dev-leptos/
 
 # Secret material anywhere: master keys, TLS private keys, certificates. Broader
 # than data/ on purpose, in case someone runs with different paths via
