@@ -39355,9 +39355,23 @@ mod contract_golden_tests {
         "$.core.generated_revision",
     ];
 
-    /// Walks a document: a secret-bearing field must not carry a non-empty string,
-    /// and no string value may look like a credential.
-    fn assert_no_secret_material(document: &str, value: &Value, path: &str) {
+    /// Collects every place a document carries credential material.
+    ///
+    /// Returns findings rather than asserting on the first one. An assertion is a
+    /// fence, not an instrument: it stops at the first hit, so the scale of a
+    /// change is invisible behind it. Twice while tightening these rules the
+    /// count of affected paths was reported from a single failure and was wrong
+    /// both times.
+    ///
+    /// `secret_material_findings` is the instrument;
+    /// `assert_no_secret_material` is the fence built on it.
+    fn secret_material_findings(document: &str, value: &Value, path: &str) -> Vec<String> {
+        let mut findings = Vec::new();
+        collect_secret_material(document, value, path, &mut findings);
+        findings
+    }
+
+    fn collect_secret_material(document: &str, value: &Value, path: &str, into: &mut Vec<String>) {
         match value {
             Value::Object(fields) => {
                 for (key, field) in fields {
@@ -39368,25 +39382,57 @@ mod contract_golden_tests {
                         && let Value::String(text) = field
                         && !text.is_empty()
                     {
-                        panic!(
+                        into.push(format!(
                             "{document}: {path}.{key} carries a string in a secret-bearing field"
-                        );
+                        ));
                     }
-                    assert_no_secret_material(document, field, &format!("{path}.{key}"));
+                    collect_secret_material(document, field, &format!("{path}.{key}"), into);
                 }
             }
             Value::Array(items) => {
                 for (index, item) in items.iter().enumerate() {
-                    assert_no_secret_material(document, item, &format!("{path}[{index}]"));
+                    collect_secret_material(document, item, &format!("{path}[{index}]"), into);
                 }
             }
-            Value::String(text) => assert!(
-                PUBLISHED_DERIVED_IDENTIFIERS.contains(&path)
-                    || !looks_like_credential_material(text),
-                "{document}: {path} looks like credential material: {text}"
-            ),
+            Value::String(text)
+                if !PUBLISHED_DERIVED_IDENTIFIERS.contains(&path)
+                    && looks_like_credential_material(text) =>
+            {
+                into.push(format!(
+                    "{document}: {path} looks like credential material: {text}"
+                ));
+            }
             _ => {}
         }
+    }
+
+    /// Values the guard must always reject, in the shape that got past it.
+    ///
+    /// Freshly generated, never real material: the point of rewriting this
+    /// repository's history is to remove the leaked tokens, and pinning them
+    /// here as fixtures would undo it. These carry the same profile — 48
+    /// lowercase hex characters, fifteen or sixteen distinct symbols, no period
+    /// — which is what the shape rule keys on.
+    ///
+    /// They exist because the reasoning behind the thresholds otherwise lives in
+    /// a commit message. Someone raising the distinct-symbol floor to quiet a
+    /// new false positive will not remember that the margin above it was five.
+    const MUST_ALWAYS_BE_CAUGHT: &[&str] = &[
+        "c441b457900d57c8562586abfe25f2693c7237a61bd046c8",
+        "f27cc679bfc5f178919815a9ff14b6b27fd45a3605bd27fb",
+        "01f4b84429c6d17bede7bf87ba0b88fe2f4f877241e50a1a",
+        "6be20756bb01d69e9b5fb1a5391375e1b8d4d37be954a7f0",
+    ];
+
+    /// The fence. Fails with every finding, not the first.
+    fn assert_no_secret_material(document: &str, value: &Value, path: &str) {
+        let findings = secret_material_findings(document, value, path);
+        assert!(
+            findings.is_empty(),
+            "{} finding(s):\n  {}",
+            findings.len(),
+            findings.join("\n  ")
+        );
     }
 
     fn golden_path(name: &str) -> PathBuf {
@@ -39555,6 +39601,17 @@ mod contract_golden_tests {
             caught.is_err(),
             "a value under a secret-marked key must be rejected on the key alone"
         );
+
+        // The shape rule keeps working on the profile that got past it. A
+        // threshold tuned to quiet a future false positive has to keep these
+        // rejected, or it has been tuned past the case it exists for.
+        for fixture in MUST_ALWAYS_BE_CAUGHT {
+            assert!(
+                looks_like_credential_material(fixture),
+                "{fixture} is 48 lowercase hex characters and must be rejected; \
+                 the shape rule no longer covers what leaked"
+            );
+        }
 
         let legitimate = serde_json::json!({
             "name": "node_auth_token_rotated",

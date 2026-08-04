@@ -96,6 +96,42 @@ def looks_random(value: str) -> bool:
     return len(set(value)) >= 10
 
 
+
+# A marker is a word. Nothing in the canary list needs to be longer, and the
+# limit is what makes the file's exemption from scanning defensible: a file that
+# cannot hold a value cannot hide one.
+MAXIMUM_CANARY_LENGTH = 24
+
+
+def assert_canary_file_holds_no_values() -> list[str]:
+    """The canary list is exempt from the content scan, so it must stay shapeless.
+
+    An exempt file is exactly where a secret would be safe from this check.
+    Rather than trusting the file, the exemption is tied to a property of it:
+    every line is `kind value`, and every value is short and free of the
+    credential alphabet's long runs.
+    """
+    problems = []
+    for number, line in enumerate(CANARY_FILE.read_text().splitlines(), start=1):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        kind, _, value = stripped.partition(" ")
+        if kind not in ("key", "literal"):
+            problems.append(f"{CANARY_FILE.name}:{number}: unknown kind {kind!r}")
+            continue
+        if len(value) > MAXIMUM_CANARY_LENGTH:
+            problems.append(
+                f"{CANARY_FILE.name}:{number}: {len(value)} characters, "
+                f"over the {MAXIMUM_CANARY_LENGTH} a marker may need"
+            )
+        if re.search(r"[A-Za-z0-9+/=_-]{16,}", value):
+            problems.append(
+                f"{CANARY_FILE.name}:{number}: contains a run long enough to be a value"
+            )
+    return problems
+
+
 def load_canaries() -> tuple[list[str], list[str]]:
     keys: list[str] = []
     literals: list[str] = []
@@ -198,6 +234,17 @@ def main() -> int:
         re.VERBOSE | re.IGNORECASE,
     )
 
+    shapeless = assert_canary_file_holds_no_values()
+    if shapeless:
+        print(
+            "tracked-content check: the canary list is exempt from scanning, so it "
+            "must not be able to hold a value:",
+            file=sys.stderr,
+        )
+        for entry in shapeless:
+            print(f"  {entry}", file=sys.stderr)
+        return 1
+
     dead = assert_allowlist_is_alive(allowed)
     if dead:
         print("tracked-content check: these allowlist entries match nothing:", file=sys.stderr)
@@ -210,7 +257,10 @@ def main() -> int:
     scanned = 0
 
     for path in tracked_files():
-        # The canary list and this file both name the patterns they hunt for.
+        # These three name the patterns they hunt for, so scanning them reports
+        # the hunt. The exemption is narrow and earned rather than granted: the
+        # canary list is checked separately for being nothing but short markers,
+        # so there is no room in it for a value to hide.
         if path in (CANARY_FILE, ALLOWLIST_FILE, Path(__file__).resolve()):
             continue
         try:
