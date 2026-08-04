@@ -1,0 +1,52 @@
+{
+  "users": [
+    {
+      "username": "alice",
+      "status": "active",
+      "data_limit_bytes": null,
+      "used_traffic_bytes": 0,
+      "expire_at_unix": null,
+      "note": "seeded for frontend development",
+      "template_id": null,
+      "next_template_id": null,
+      "proxy_profile_ids": [],
+      "excluded_inbound_tags": [],
+      "subscription_token": "de602306bbae74508cea5921300bab648a2548435fa09aac",
+      "sub_revoked_at_unix": null,
+      "created_at_unix": 1785838841,
+      "updated_at_unix": 1785838841
+    },
+    {
+      "username": "bob",
+      "status": "active",
+      "data_limit_bytes": null,
+      "used_traffic_bytes": 0,
+      "expire_at_unix": null,
+      "note": "seeded for frontend development",
+      "template_id": null,
+      "next_template_id": null,
+      "proxy_profile_ids": [],
+      "excluded_inbound_tags": [],
+      "subscription_token": "9b2c4e06688b4fae7eacb13f2a3ca6453de2320059868907",
+      "sub_revoked_at_unix": null,
+      "created_at_unix": 1785838841,
+      "updated_at_unix": 1785838841
+    },
+    {
+      "username": "carol",
+      "status": "active",
+      "data_limit_bytes": null,
+      "used_traffic_bytes": 0,
+      "expire_at_unix": null,
+      "note": "seeded for frontend development",
+      "template_id": null,
+      "next_template_id": null,
+      "proxy_profile_ids": [],
+      "excluded_inbound_tags": [],
+      "subscription_token": "a705ae69eefe9bf5f507c93c4f69d94bb43e3faebdb6e0f5",
+      "sub_revoked_at_unix": null,
+      "created_at_unix": 1785838841,
+      "updated_at_unix": 1785838841
+    }
+  ]
+}

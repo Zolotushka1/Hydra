@@ -1,0 +1,5 @@
+{"event_type":"login_succeeded","username":"dev-admin","client_ip":"127.0.0.1","created_at_unix":1785838841,"detail":"admin login succeeded"}
+{"event_type":"user_created","username":"dev-admin","client_ip":"127.0.0.1","created_at_unix":1785838841,"detail":"user created: alice"}
+{"event_type":"user_created","username":"dev-admin","client_ip":"127.0.0.1","created_at_unix":1785838841,"detail":"user created: bob"}
+{"event_type":"user_created","username":"dev-admin","client_ip":"127.0.0.1","created_at_unix":1785838841,"detail":"user created: carol"}
+{"event_type":"login_succeeded","username":"dev-admin","client_ip":"127.0.0.1","created_at_unix":1785838849,"detail":"admin login succeeded"}

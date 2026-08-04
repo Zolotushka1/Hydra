@@ -144,11 +144,21 @@ fn Overview(document: UiBootstrapSnapshot) -> impl IntoView {
                 <dt>"Clusters"</dt>
                 <dd>{document.clusters.total} " total"</dd>
 
-                <dt>"Memory"</dt>
+                // Host memory against host total, never against the budget.
+                //
+                // The budget bounds the panel *process*, and its resident size
+                // lives in the resource-budget document rather than this one.
+                // Rendering host usage against it read as a 1690x overrun on a
+                // machine that was fine, and would have read wrong even after
+                // the units were fixed: two different quantities side by side.
+                <dt>"Host memory"</dt>
                 <dd>
-                    {document.system.memory_used_bytes / 1_048_576} " MB used of a "
-                    {document.system.memory_budget_mb} " MB budget"
+                    {document.system.memory_used_bytes / 1_048_576} " MB used of "
+                    {document.system.memory_total_bytes / 1_048_576} " MB"
                 </dd>
+
+                <dt>"Panel process budget"</dt>
+                <dd>{document.system.memory_budget_mb} " MB"</dd>
 
                 <dt>"Active alerts"</dt>
                 <dd>{document.system.active_alerts.len()}</dd>

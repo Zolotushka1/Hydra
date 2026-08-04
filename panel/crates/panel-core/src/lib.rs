@@ -27862,8 +27862,16 @@ fn read_system_stats() -> (DiskStats, u64, u64) {
         free_bytes,
     };
 
-    let memory_total_bytes = system.total_memory().saturating_mul(1024);
-    let memory_used_bytes = system.used_memory().saturating_mul(1024);
+    // sysinfo returns bytes. It returned KiB up to 0.29, and the multiply that
+    // converted them outlived the upgrade: every machine-wide memory figure the
+    // panel reported was 1024 times too large, which the frontend surfaced as
+    // "864656 MB used of a 512 MB budget".
+    //
+    // Nothing caught it because both figures were scaled the same way, so their
+    // ratio stayed plausible and only the absolute values were wrong — and no
+    // test asserted an absolute value.
+    let memory_total_bytes = system.total_memory();
+    let memory_used_bytes = system.used_memory();
 
     (disk, memory_used_bytes, memory_total_bytes)
 }
@@ -39509,6 +39517,79 @@ mod contract_golden_tests {
             "values": ["node_auth_token_rotated", "provisioning_executor_token_rotated"],
         });
         assert_no_secret_material("probe", &legitimate, "$");
+    }
+}
+
+#[cfg(test)]
+mod system_stats_tests {
+    use super::*;
+
+    /// The reported memory is the machine's memory, in bytes.
+    ///
+    /// Checked against `/proc/meminfo` rather than against itself. The previous
+    /// state of this code multiplied both figures by 1024, so every derived
+    /// ratio — used over total, percent of total — stayed correct while the
+    /// absolute values were a thousandfold wrong. A test that asserted
+    /// `used <= total`, or that the numbers were present, would have passed
+    /// throughout. Only an external reference catches a scale error.
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn reported_memory_matches_proc_meminfo() {
+        let meminfo = std::fs::read_to_string("/proc/meminfo").expect("/proc/meminfo is readable");
+        let kib = |key: &str| -> u64 {
+            meminfo
+                .lines()
+                .find(|line| line.starts_with(key))
+                .and_then(|line| line.split_whitespace().nth(1))
+                .and_then(|value| value.parse::<u64>().ok())
+                .unwrap_or_else(|| panic!("{key} is missing from /proc/meminfo"))
+        };
+
+        let (_, memory_used_bytes, memory_total_bytes) = read_system_stats();
+        let expected_total_bytes = kib("MemTotal:") * 1024;
+
+        assert_eq!(
+            memory_total_bytes, expected_total_bytes,
+            "total memory is not in bytes: reported {memory_total_bytes}, \
+             /proc/meminfo says {expected_total_bytes}"
+        );
+
+        // Used memory moves between the two reads, so it is bounded rather than
+        // compared exactly. The bound is what a scale error violates: 1024 times
+        // too large puts it far above total.
+        assert!(
+            memory_used_bytes <= memory_total_bytes,
+            "used memory {memory_used_bytes} exceeds total {memory_total_bytes}, \
+             which is what a units mismatch looks like"
+        );
+        assert!(
+            memory_used_bytes > 0,
+            "used memory reported as zero, so the reading is not working"
+        );
+    }
+
+    /// The panel process is measured in the same unit as its budget.
+    ///
+    /// These two are compared against each other by the memory budget alert, so
+    /// a unit mismatch between them would either fire the alert permanently or
+    /// never. The screen that surfaced the machine-wide bug compared the *host's*
+    /// used memory against this budget, which is a different quantity entirely.
+    #[test]
+    fn process_memory_is_bytes_and_below_a_sane_ceiling() {
+        let process = read_current_process_stats();
+
+        assert!(
+            process.memory_used_bytes > 1024 * 1024,
+            "the test binary cannot occupy less than a megabyte; \
+             {} looks like a unit smaller than bytes",
+            process.memory_used_bytes
+        );
+        assert!(
+            process.memory_used_bytes < 64 * 1024 * 1024 * 1024,
+            "{} bytes exceeds any plausible resident size, \
+             which is what a unit larger than bytes looks like",
+            process.memory_used_bytes
+        );
     }
 }
 

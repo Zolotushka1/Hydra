@@ -6,11 +6,6 @@
 target = "index.html"
 dist = "dist"
 
-# Assets are requested from the panel at `/assets/...`, which is where
-# `panel-app` mounts the bundle directory. Without this trunk emits paths
-# relative to the document root and the panel serves nothing at them.
-public_url = "/assets/"
-
 [serve]
 # Development only. The panel is the origin in production; this proxy exists so
 # `trunk serve` can talk to a locally running panel without CORS.
