@@ -23,7 +23,7 @@
       "notify_on_activation": true,
       "notify_on_resolution": true
     },
-    "bot_token_configured": "<volatile>",
+    "bot_token_configured": false,
     "default_chat_id": null,
     "enabled": false,
     "notify_on_node_events": true,

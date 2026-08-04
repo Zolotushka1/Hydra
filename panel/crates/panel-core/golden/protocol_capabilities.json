@@ -8,7 +8,7 @@
           "notes": [],
           "production_ready": true,
           "requires_domain": false,
-          "requires_path": "<volatile>",
+          "requires_path": false,
           "requires_secret_material": false,
           "security": "none",
           "transport": "tcp"
@@ -17,7 +17,7 @@
           "notes": [],
           "production_ready": true,
           "requires_domain": false,
-          "requires_path": "<volatile>",
+          "requires_path": false,
           "requires_secret_material": false,
           "security": "tls",
           "transport": "tcp"
@@ -28,7 +28,7 @@
           ],
           "production_ready": true,
           "requires_domain": false,
-          "requires_path": "<volatile>",
+          "requires_path": false,
           "requires_secret_material": false,
           "security": "reality",
           "transport": "tcp"
@@ -37,7 +37,7 @@
           "notes": [],
           "production_ready": true,
           "requires_domain": true,
-          "requires_path": "<volatile>",
+          "requires_path": true,
           "requires_secret_material": false,
           "security": "tls",
           "transport": "ws"
@@ -46,7 +46,7 @@
           "notes": [],
           "production_ready": true,
           "requires_domain": true,
-          "requires_path": "<volatile>",
+          "requires_path": false,
           "requires_secret_material": false,
           "security": "tls",
           "transport": "grpc"
@@ -57,7 +57,7 @@
           ],
           "production_ready": false,
           "requires_domain": true,
-          "requires_path": "<volatile>",
+          "requires_path": true,
           "requires_secret_material": false,
           "security": "tls",
           "transport": "http_upgrade"
@@ -68,7 +68,7 @@
           ],
           "production_ready": false,
           "requires_domain": false,
-          "requires_path": "<volatile>",
+          "requires_path": false,
           "requires_secret_material": false,
           "security": "tls",
           "transport": "quic"
@@ -79,7 +79,7 @@
           ],
           "production_ready": true,
           "requires_domain": false,
-          "requires_path": "<volatile>",
+          "requires_path": true,
           "requires_secret_material": false,
           "security": "reality",
           "transport": "xhttp"
@@ -90,7 +90,7 @@
           ],
           "production_ready": true,
           "requires_domain": true,
-          "requires_path": "<volatile>",
+          "requires_path": true,
           "requires_secret_material": false,
           "security": "tls",
           "transport": "xhttp"
@@ -129,7 +129,7 @@
           ],
           "production_ready": true,
           "requires_domain": true,
-          "requires_path": "<volatile>",
+          "requires_path": false,
           "requires_secret_material": true,
           "security": "tls",
           "transport": "quic"
@@ -164,7 +164,7 @@
           ],
           "production_ready": true,
           "requires_domain": false,
-          "requires_path": "<volatile>",
+          "requires_path": false,
           "requires_secret_material": true,
           "security": "mutual_tls",
           "transport": "udp"

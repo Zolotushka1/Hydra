@@ -75,6 +75,20 @@ jobs:
       - name: No credential material in tracked contents
         run: python3 scripts/check-tracked-content.py
 
+  # Every guard in this repository was written after something got past it, so
+  # each one is broken on purpose here and required to notice. A guard nobody has
+  # seen fail is a claim about its author's intent.
+  mutation-controls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: panel
+      - name: Guards notice when their property is broken
+        run: python3 scripts/mutation-controls.py
+
   test:
     needs: changes
     runs-on: ubuntu-latest

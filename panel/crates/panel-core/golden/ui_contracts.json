@@ -7,87 +7,87 @@
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/logout"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/me"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/sessions"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/sessions/{session_id}/revoke"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/security/settings"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/security/settings"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/security/preset"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/2fa/state"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/2fa/setup"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/2fa/enable"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/2fa/disable"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/2fa/two-step"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/security/bans"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/security/bans"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/security/bans/{client_ip}"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/admin/security/audit"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/admin/security/status"
         }
       ],
       "group": "security"
@@ -97,67 +97,67 @@
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/bootstrap"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/overview"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/contracts"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/security"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/core"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/users"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/nodes"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/clusters"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/telegram"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/audit"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/subscriptions"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/protocols"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/ui/installer"
         }
       ],
       "group": "ui"
@@ -167,27 +167,27 @@
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/telegram/settings"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/telegram/settings"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/telegram/events"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/telegram/retry-due"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/telegram/test"
         }
       ],
       "group": "telegram"
@@ -197,37 +197,37 @@
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/installer/access-modes"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/installer/plan"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/installer/bootstrap"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/installer/session"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/installer/session/result"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/installer/jobs"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/installer/jobs"
         }
       ],
       "group": "installer"
@@ -237,42 +237,42 @@
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/system/overview"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/system/resource-budget"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/system/thresholds"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/system/thresholds"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/system/secret-readiness"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/system/alerts"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/system/alerts/history"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/system/logs"
         }
       ],
       "group": "system"
@@ -282,62 +282,62 @@
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/core/config"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/core/config"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/core/generated-config"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/core/xray-config"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/core/xray-config/validation"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/core/xray-config/external-validation"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/core/state"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/core/apply-generated"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/core/apply-history"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/core/actions"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/core/restart"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/core/xray/update"
         }
       ],
       "group": "core"
@@ -347,22 +347,22 @@
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/route-materials"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/route-materials/credentials/rotate"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/route-materials/credentials/revoke"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/route-materials/ca/rotate"
         }
       ],
       "group": "route_materials"
@@ -372,92 +372,92 @@
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/users"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/users"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/users/activity"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/users/{username}"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/users/{username}"
         },
         {
           "method": "DELETE",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/users/{username}"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/users/{username}/usage/reset"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/users/{username}/usage/report"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/users/{username}/activity"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/users/{username}/subscription/revoke"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/users/{username}/subscription"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/users/{username}/subscription/render"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/users/{username}/config-preview"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/users/{username}/generated-config"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/user-templates"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/user-templates"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/user-templates/{template_id}"
         },
         {
           "method": "DELETE",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/user-templates/{template_id}"
         }
       ],
       "group": "users"
@@ -467,122 +467,122 @@
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/subscription-plans"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-plans"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-plans/{plan_id}"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-plans/{plan_id}"
         },
         {
           "method": "DELETE",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-plans/{plan_id}"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/subscription-plans/{plan_id}/clients"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-plans/{plan_id}/clients"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}"
         },
         {
           "method": "DELETE",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/subscription/render"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/access-preview"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/node-access"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/devices"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/device-enrollments"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/device-enrollments"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/device-enrollments/{grant_id}/revoke"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/devices/register"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/devices/{device_id}/revoke"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/sessions"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/usage"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/usage"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/usage/reset"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/subscription-clients/{client_id}/revoke"
         }
       ],
       "group": "subscription_catalog"
@@ -592,67 +592,67 @@
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/inbounds"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/inbounds"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/protocol-capabilities"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/inbounds/{tag}"
         },
         {
           "method": "DELETE",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/inbounds/{tag}"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/hosts"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/hosts"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/hosts/{host_id}"
         },
         {
           "method": "DELETE",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/hosts/{host_id}"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/proxy-profiles"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/proxy-profiles"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/proxy-profiles/{profile_id}"
         },
         {
           "method": "DELETE",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/proxy-profiles/{profile_id}"
         }
       ],
       "group": "network"
@@ -662,32 +662,32 @@
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/clusters"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/clusters"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/clusters/{cluster_id}"
         },
         {
           "method": "DELETE",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/clusters/{cluster_id}"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/clusters/{cluster_id}/validation"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/clusters/{cluster_id}/preview"
         }
       ],
       "group": "clusters"
@@ -697,122 +697,122 @@
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/health-center"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}"
         },
         {
           "method": "DELETE",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/diagnostics"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/apply-status"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/bootstrap-readiness"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
-        },
-        {
-          "method": "GET",
-          "paginated": true,
-          "path": "<volatile>"
-        },
-        {
-          "method": "POST",
-          "paginated": false,
-          "path": "<volatile>"
-        },
-        {
-          "method": "POST",
-          "paginated": false,
-          "path": "<volatile>"
-        },
-        {
-          "method": "POST",
-          "paginated": false,
-          "path": "<volatile>"
-        },
-        {
-          "method": "POST",
-          "paginated": false,
-          "path": "<volatile>"
-        },
-        {
-          "method": "GET",
-          "paginated": false,
-          "path": "<volatile>"
-        },
-        {
-          "method": "GET",
-          "paginated": false,
-          "path": "<volatile>"
-        },
-        {
-          "method": "GET",
-          "paginated": false,
-          "path": "<volatile>"
-        },
-        {
-          "method": "POST",
-          "paginated": false,
-          "path": "<volatile>"
-        },
-        {
-          "method": "POST",
-          "paginated": false,
-          "path": "<volatile>"
-        },
-        {
-          "method": "POST",
-          "paginated": false,
-          "path": "<volatile>"
-        },
-        {
-          "method": "POST",
-          "paginated": false,
-          "path": "<volatile>"
-        },
-        {
-          "method": "POST",
-          "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/bootstrap-probe"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/bootstrap-history"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "/api/nodes/{node_id}/auth/rotate"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "/api/nodes/{node_id}/apply"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "/api/nodes/{node_id}/apply/retry"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "/api/nodes/{node_id}/rollback"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "/api/nodes/{node_id}/cluster-targets"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "/api/nodes/{node_id}/local/health"
+        },
+        {
+          "method": "GET",
+          "paginated": false,
+          "path": "/api/nodes/{node_id}/local/state"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "/api/nodes/{node_id}/local/runtime/{action}"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "/api/nodes/{node_id}/local/runtime-components/{component}/{action}"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "/api/nodes/{node_id}/local/xray/update"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "/api/nodes/{node_id}/heartbeat"
+        },
+        {
+          "method": "POST",
+          "paginated": false,
+          "path": "/api/nodes/{node_id}/sync"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/sync-history"
+        },
+        {
+          "method": "GET",
+          "paginated": true,
+          "path": "/api/nodes/{node_id}/apply-results"
         }
       ],
       "group": "nodes"
@@ -822,87 +822,87 @@
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/provisioning"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/provisioning/status"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/provisioning/events"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/provisioning/preflight"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/provisioning/ssh-preflight-probe"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/provisioning/ssh-install-plan"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/provisioning/executor-handshake"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/provisioning/executors"
         },
         {
           "method": "GET",
           "paginated": true,
-          "path": "<volatile>"
+          "path": "/api/provisioning/executor-submissions"
         },
         {
           "method": "PUT",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/provisioning/executors/{executor_id}/trust"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/provisioning/executors/{executor_id}/auth/rotate"
         },
         {
           "method": "GET",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/provisioning/{task_id}/executor-session"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/provisioning/start"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/provisioning/reprovision"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/provisioning/{task_id}/touch"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/provisioning/{task_id}/finish"
         },
         {
           "method": "POST",
           "paginated": false,
-          "path": "<volatile>"
+          "path": "/api/nodes/{node_id}/provisioning/{task_id}/retry"
         }
       ],
       "group": "provisioning"

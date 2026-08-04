@@ -39252,34 +39252,140 @@ mod contract_golden_tests {
             || key.ends_with("_id")
             || key == "id"
             || key == "api_version"
-            || key.contains("token")
-            || key.contains("hash")
-            || key.contains("hmac")
-            || key.contains("fingerprint")
-            || key.contains("revision")
-            || key.contains("path")
+            || key.ends_with("token")
+            || key.ends_with("hash")
+            || key.ends_with("hmac")
+            || key.ends_with("fingerprint")
+            || key.ends_with("revision")
+            // `_path`, not `path`. Matching the substring blanked 168 route
+            // paths in `ui_contracts` — the document exists to publish them, and
+            // the drift that started this work was `apply/status` against
+            // `apply-status`, a path — plus 11 `requires_path` booleans in the
+            // capability matrix. It matched no filesystem path in any golden.
+            || key.ends_with("_path")
             // Live host measurements: they change between two adjacent runs, so
             // pinning their values is pointless. The field names stay, so the
-            // snapshot still catches a renamed metric.
+            // snapshot still catches a renamed metric, and the bounds below
+            // still catch a scale error.
             || key.ends_with("_bytes")
             || key.ends_with("_percent")
             || key.contains("uptime")
     }
 
+    /// The ceiling a volatile measurement may not exceed, by key.
+    ///
+    /// A normalized value asserts nothing about itself, so a field replaced by
+    /// `<volatile>` is a field the snapshot does not check at all — including
+    /// against being replaced by zero, or by a figure a thousand times too
+    /// large. The exact number is genuinely unpinnable; the magnitude is not.
+    ///
+    /// This is the check that was missing when `used_memory` was multiplied by
+    /// 1024: both memory figures were normalized, so no golden could see it.
+    fn volatile_numeric_ceiling(key: &str) -> Option<u64> {
+        // Memory and disk need different ceilings, and the difference is what
+        // makes the memory one useful. A petabyte covers both and catches
+        // nothing: the 1024x error on an 8 GB machine produces 8 TB, which is
+        // comfortably under it. A terabyte of RAM is far above any host this
+        // product targets and far below what that mistake yields.
+        if key.starts_with("memory_") && key.ends_with("_bytes") {
+            return Some(1 << 40);
+        }
+        if key.ends_with("_bytes") {
+            return Some(1 << 50);
+        }
+        if key.ends_with("_percent") {
+            return Some(100);
+        }
+        // Unix seconds: after 2000 and before 2100, which a millisecond or
+        // nanosecond mix-up leaves immediately.
+        if key.ends_with("_unix") {
+            return Some(4_102_444_800);
+        }
+        None
+    }
+
+    /// Bounds a measurement that cannot be pinned exactly.
+    ///
+    /// Replacing a number with `<volatile>` stops the snapshot checking it at
+    /// all: not the value, not the sign, not the magnitude. Zero would pass, and
+    /// so would a figure a thousand times too large — which is precisely what
+    /// happened to `memory_used_bytes` while both memory fields were normalized.
+    ///
+    /// The exact reading is genuinely unpinnable between two runs. The order of
+    /// magnitude is not, and that is where unit errors live.
+    fn assert_volatile_number_is_plausible(key: &str, number: &serde_json::Number) {
+        let Some(ceiling) = volatile_numeric_ceiling(key) else {
+            return;
+        };
+        let Some(value) = number.as_u64() else {
+            return;
+        };
+        assert!(
+            value <= ceiling,
+            "{key} is {value}, above the plausible ceiling of {ceiling}; \
+             a value this far out is a unit mismatch, not a measurement"
+        );
+    }
+
+    /// `used` never exceeds `total`, for any pair that carries both.
+    ///
+    /// The relation survives normalization, which the values do not. It is also
+    /// the only part of a measurement that stays checkable when both figures are
+    /// replaced by `<volatile>`: a one-sided unit error violates it immediately,
+    /// where an absolute ceiling does not — on a machine with 8 GB, a
+    /// thousandfold error yields 900 GB, under any ceiling generous enough to
+    /// allow a real server.
+    ///
+    /// The both-sided case, which is what actually happened, keeps the relation
+    /// intact and is caught instead by `reported_memory_matches_proc_meminfo`,
+    /// which compares against something outside the program.
+    fn assert_used_does_not_exceed_total(fields: &Map<String, Value>) {
+        for (key, field) in fields {
+            let Some(stem) = key.strip_suffix("used_bytes") else {
+                continue;
+            };
+            let Some(used) = field.as_u64() else {
+                continue;
+            };
+            let Some(total) = fields
+                .get(&format!("{stem}total_bytes"))
+                .and_then(Value::as_u64)
+            else {
+                continue;
+            };
+            assert!(
+                used <= total,
+                "{key} is {used}, above {stem}total_bytes at {total}; \
+                 a measurement cannot exceed its own total, so one of the two \
+                 is in the wrong unit"
+            );
+        }
+    }
+
     fn normalize(value: &Value) -> Value {
         match value {
             Value::Object(fields) => {
+                assert_used_does_not_exceed_total(fields);
                 let mut normalized = Map::new();
                 for (key, field) in fields {
                     let replacement = if is_volatile_key(key) {
                         match field {
                             Value::Null => Value::Null,
+                            // A boolean is never volatile. `requires_path` and
+                            // `bot_token_configured` were blanked by substring
+                            // rules; if a flag differs between two runs that is a
+                            // real difference and the snapshot should say so.
+                            Value::Bool(flag) => Value::Bool(*flag),
                             Value::Array(items) => Value::Array(
                                 items
                                     .iter()
                                     .map(|_| Value::String("<volatile>".to_string()))
                                     .collect(),
                             ),
+                            Value::Number(number) => {
+                                assert_volatile_number_is_plausible(key, number);
+                                Value::String("<volatile>".to_string())
+                            }
                             _ => Value::String("<volatile>".to_string()),
                         }
                     } else {
